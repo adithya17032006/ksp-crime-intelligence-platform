@@ -14,3 +14,7 @@ env/
 outputs/models/
 
 .DS_Store
+
+.virtual_documents/
+
+models/
