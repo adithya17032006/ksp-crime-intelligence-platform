@@ -313,6 +313,79 @@ Isolation Forest
 
 
 \---
+## Module 6: Feature Importance Analysis
+
+### Objective
+
+Identify the most influential factors contributing to crime prediction outcomes.
+
+### Method
+
+Random Forest Feature Importance Analysis
+
+### Key Findings
+
+Top contributing features include:
+
+* Longitude
+* Latitude
+* Victim Age
+* Offender Age
+* Police Station
+
+### Benefits
+
+* Improved model interpretability
+* Better understanding of crime drivers
+* Support for data-driven policing strategies
+
+---
+
+## Module 7: Patrol Recommendation System
+
+### Objective
+
+Provide district-level patrol prioritization based on crime intelligence indicators.
+
+### Inputs
+
+* Crime Risk Index (CRI)
+* District Anomaly Counts
+
+### Outputs
+
+* district_patrol_priority.csv
+
+### Benefits
+
+* Patrol prioritization
+* Resource allocation support
+* Operational planning assistance
+
+---
+
+## Module 8: Temporal Crime Intelligence
+
+### Objective
+
+Analyze crime occurrence patterns over time.
+
+### Analysis Performed
+
+* Monthly Crime Trends
+* Weekday Crime Trends
+* Crime Frequency Distribution
+
+### Outputs
+
+* monthly_crime_trends.csv
+* weekday_crime_trends.csv
+
+### Benefits
+
+* Patrol scheduling support
+* Seasonal crime monitoring
+* Temporal pattern identification
 
 
 
@@ -376,43 +449,37 @@ Isolation Forest
 
 
 
-\## Achievements
+## Achievements
 
+* Crime Heatmap Generation
+* District-Level Crime Risk Index
+* DBSCAN Hotspot Detection
+* Random Forest Crime Prediction
+* Isolation Forest Anomaly Detection
+* Feature Importance Analysis
+* Patrol Recommendation System
+* Temporal Crime Intelligence
+* Interactive GIS Maps
+* Crime Intelligence Datasets
 
-
-\* Crime Heatmap Generation
-
-\* District-Level Crime Risk Index
-
-\* DBSCAN Hotspot Detection
-
-\* Random Forest Crime Prediction
-
-\* Isolation Forest Anomaly Detection
-
-\* Interactive GIS Maps
-
-\* Crime Intelligence Datasets
 
 
 
 \---
+## Future Improvements
+
+* Real-Time Crime Monitoring
+* Dashboard Integration
+* Predictive Crime Forecasting
+* Patrol Route Optimization
+* Criminal Network Analysis
+* Explainable AI (SHAP/LIME)
+* Real-Time Alert Generation
+* Integration with Official KSP Datasets
 
 
 
-\## Future Improvements
 
-
-
-\* Real-Time Crime Monitoring
-
-\* Explainable AI (SHAP)
-
-\* Dashboard Integration
-
-\* Predictive Crime Forecasting
-
-\* Resource Deployment Recommendations
 
 
 
