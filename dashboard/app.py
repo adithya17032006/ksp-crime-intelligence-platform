@@ -4,8 +4,11 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
-import random
+import requests
 from datetime import datetime, timedelta
+
+# Import the API client representing our pipelines
+from api_client import KSPAPIClient
 
 # ----------------------------------------------------
 # 1. Page Configuration
@@ -62,96 +65,95 @@ st.markdown("""
 
 
 # ----------------------------------------------------
-# 3. Data Loading (Real CSV with Mock Fallback)
+# 3. Sidebar Configuration, Settings & API Client
 # ----------------------------------------------------
-@st.cache_data
-def load_crime_data():
-    """Loads crime data from dashboard/crime_data.csv if exists, otherwise generates mock data."""
-    csv_path = "dashboard/crime_data.csv"
-    
-    if os.path.exists(csv_path):
-        try:
-            df = pd.read_csv(csv_path)
-            # Parse dates
-            df["Date"] = pd.to_datetime(df["date"])
-            
-            # Map CSV columns to dashboard variables
-            df["Incident ID"] = df["crime_id"]
-            df["District"] = df["district"]
-            df["Crime Category"] = df["crime_type"]
-            df["Latitude"] = df["latitude"]
-            df["Longitude"] = df["longitude"]
-            df["Status"] = df["status"]
-            df["Repeat Offender"] = df["repeat_offender"].astype(bool)
-            df["Victim Age"] = df["victim_age"]
-            df["Offender Age"] = df["offender_age"]
-            df["Police Station"] = df["police_station"]
-            
-            # Severity mapping based on crime category
-            severity_map = {
-                "Vehicle Theft": "Low",
-                "Theft": "Low",
-                "Cybercrime": "Medium",
-                "Drug Offence": "Medium",
-                "Fraud": "Medium",
-                "Assault": "High",
-                "Burglary": "High",
-                "Robbery": "High"
-            }
-            df["Severity"] = df["Crime Category"].map(severity_map).fillna("Medium")
-            df["Severity_Val"] = df["Severity"].map({"Low": 6, "Medium": 12, "High": 22})
-            return df
-        except Exception as e:
-            st.error(f"Error loading crime_data.csv: {e}. Falling back to mock generator.")
-            
-    # --- Mock Fallback Generator ---
-    districts = ["Bengaluru City", "Mysuru", "Hubballi-Dharwad", "Mangaluru", "Belagavi", "Kalaburagi"]
-    crime_categories = ["Theft", "Cyber Crime", "Assault", "Narcotics", "Robbery"]
-    np.random.seed(1703)
-    start_date = datetime.now() - timedelta(days=365)
-    
-    coords = {
-        "Bengaluru City": (12.9716, 77.5946),
-        "Mysuru": (12.2958, 76.6394),
-        "Hubballi-Dharwad": (15.3647, 75.1240),
-        "Mangaluru": (12.9141, 74.8560),
-        "Belagavi": (15.8497, 74.4977),
-        "Kalaburagi": (17.3297, 76.8343)
-    }
-    
-    records = []
-    for i in range(1000):
-        district = np.random.choice(districts)
-        base_lat, base_lon = coords[district]
-        lat = base_lat + np.random.normal(0, 0.06)
-        lon = base_lon + np.random.normal(0, 0.06)
-        crime = np.random.choice(crime_categories)
-        days_offset = np.random.randint(0, 365)
-        date = start_date + timedelta(days=days_offset)
-        severity = np.random.choice(["Low", "Medium", "High"], p=[0.45, 0.35, 0.20])
-        repeat_offender = np.random.choice([True, False], p=[0.22, 0.78])
-        status = np.random.choice(["Solved", "Under Investigation", "Unsolved"], p=[0.60, 0.30, 0.10])
-        
-        records.append({
-            "Incident ID": f"FIR-{date.strftime('%Y')}-{i:04d}",
-            "Date": date,
-            "District": district,
-            "Crime Category": crime,
-            "Latitude": lat,
-            "Longitude": lon,
-            "Severity": severity,
-            "Repeat Offender": repeat_offender,
-            "Status": status,
-            "Victim Age": np.random.randint(18, 75),
-            "Offender Age": np.random.randint(18, 65)
-        })
-        
-    df = pd.DataFrame(records)
-    df["Severity_Val"] = df["Severity"].map({"Low": 6, "Medium": 12, "High": 22})
-    return df
+st.sidebar.markdown("""
+<div style="text-align: center; padding: 15px 0 5px 0;">
+    <h2 style="color: #eab308; font-size: 20px; font-weight: 800; margin: 0; font-family: 'Outfit';">KSP INTELLIGENCE</h2>
+    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Command Portal v2.0</p>
+</div>
+<hr style="margin-top: 10px; margin-bottom: 20px; border-color: #334155;" />
+""", unsafe_allow_html=True)
 
-# Load datasets
-df_all = load_crime_data()
+# 3.1 Connection settings for backend API microservices
+st.sidebar.subheader("🔌 API Port Connections")
+api_host = st.sidebar.text_input("Target API Host", "http://localhost:8000", key="api_host_setting")
+
+# Instantiate central API client
+api_client = KSPAPIClient(base_url=api_host)
+
+# Verify API connectivity
+api_connected = False
+try:
+    res = requests.get(f"{api_host}/api/backend/incidents", timeout=0.4)
+    if res.status_code == 200:
+        api_connected = True
+except Exception:
+    pass
+
+if api_connected:
+    st.sidebar.success("🟢 API Pipelines: Connected")
+else:
+    st.sidebar.warning("⚠️ Running in Local Fallback")
+
+st.sidebar.markdown("<hr style='border-color: #334155; margin: 15px 0;' />", unsafe_allow_html=True)
+
+# 3.2 Main Navigation Menu
+st.sidebar.subheader("🧭 Navigation Menu")
+page = st.sidebar.radio(
+    "Select System Module",
+    ["📊 Dashboard Overview", "📍 GIS Mapping & Hotspots", "🔮 ML Crime Predictions", "🕸️ Criminal Network Analysis"],
+    label_visibility="collapsed"
+)
+
+st.sidebar.markdown("<hr style='border-color: #334155; margin: 15px 0;' />", unsafe_allow_html=True)
+
+# Fetch base dataset using Backend API Client
+df_all = api_client.fetch_incidents()
+
+if df_all.empty:
+    st.error("Unable to load crime dataset from API or Local File. Please verify database path configuration.")
+    st.stop()
+
+# 3.3 Query Filters
+st.sidebar.subheader("🔍 Query Filters")
+
+# District Filter
+districts = ["All Districts"] + sorted(list(df_all["District"].unique()))
+selected_district = st.sidebar.selectbox("Jurisdiction", districts)
+
+# Crime Category Filter
+crime_categories = ["All Categories"] + sorted(list(df_all["Crime Category"].unique()))
+selected_crime = st.sidebar.selectbox("Offense Category", crime_categories)
+
+# Time Frame Filter
+time_filter = st.sidebar.selectbox(
+    "Reporting Period",
+    ["All Time", "Last 12 Months", "Last 6 Months", "Last 30 Days"]
+)
+
+# Apply Filter logic
+filtered_df = df_all.copy()
+
+# Date filtering (relative to max date in database for robust handling of static data)
+max_date = df_all["Date"].max()
+if time_filter == "Last 12 Months":
+    cutoff = max_date - timedelta(days=365)
+    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
+elif time_filter == "Last 6 Months":
+    cutoff = max_date - timedelta(days=180)
+    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
+elif time_filter == "Last 30 Days":
+    cutoff = max_date - timedelta(days=30)
+    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
+
+# District filter
+if selected_district != "All Districts":
+    filtered_df = filtered_df[filtered_df["District"] == selected_district]
+
+# Crime Category filter
+if selected_crime != "All Categories":
+    filtered_df = filtered_df[filtered_df["Crime Category"] == selected_crime]
 
 
 # ----------------------------------------------------
@@ -195,71 +197,12 @@ def draw_kpi_card(title, value, subtitle, border_color="#3B82F6"):
 
 
 # ----------------------------------------------------
-# 5. Sidebar Configuration & Filters
-# ----------------------------------------------------
-st.sidebar.markdown("""
-<div style="text-align: center; padding: 15px 0 5px 0;">
-    <h2 style="color: #eab308; font-size: 20px; font-weight: 800; margin: 0; font-family: 'Outfit';">KSP INTELLIGENCE</h2>
-    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Command Portal v1.5</p>
-</div>
-<hr style="margin-top: 10px; margin-bottom: 20px; border-color: #334155;" />
-""", unsafe_allow_html=True)
-
-st.sidebar.subheader("🧭 Navigation Menu")
-page = st.sidebar.radio(
-    "Select System Module",
-    ["📊 Dashboard Overview", "📍 GIS Mapping & Hotspots", "🔮 ML Crime Predictions", "🕸️ Criminal Network Analysis"],
-    label_visibility="collapsed"
-)
-
-st.sidebar.markdown("<hr style='border-color: #334155; margin: 20px 0;' />", unsafe_allow_html=True)
-st.sidebar.subheader("🔍 Query Filters")
-
-# District Filter
-districts = ["All Districts"] + sorted(list(df_all["District"].unique()))
-selected_district = st.sidebar.selectbox("Jurisdiction", districts)
-
-# Crime Category Filter
-crime_categories = ["All Categories"] + sorted(list(df_all["Crime Category"].unique()))
-selected_crime = st.sidebar.selectbox("Offense Category", crime_categories)
-
-# Time Frame Filter
-time_filter = st.sidebar.selectbox(
-    "Reporting Period",
-    ["All Time", "Last 12 Months", "Last 6 Months", "Last 30 Days"]
-)
-
-# Apply Filter logic
-filtered_df = df_all.copy()
-
-# Date filtering (relative to max date in database for robust handling of static data)
-max_date = df_all["Date"].max()
-if time_filter == "Last 12 Months":
-    cutoff = max_date - timedelta(days=365)
-    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
-elif time_filter == "Last 6 Months":
-    cutoff = max_date - timedelta(days=180)
-    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
-elif time_filter == "Last 30 Days":
-    cutoff = max_date - timedelta(days=30)
-    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
-
-# District filter
-if selected_district != "All Districts":
-    filtered_df = filtered_df[filtered_df["District"] == selected_district]
-
-# Crime Category filter
-if selected_crime != "All Categories":
-    filtered_df = filtered_df[filtered_df["Crime Category"] == selected_crime]
-
-
-# ----------------------------------------------------
-# 6. Page 1: Dashboard Overview
+# 5. Page 1: Dashboard Overview
 # ----------------------------------------------------
 if page == "📊 Dashboard Overview":
     render_header("Overview")
     
-    # 6.1 Core Metrics Calculation
+    # 5.1 Core Metrics Calculation
     total_crimes = len(filtered_df)
     
     # Hotspot grid clustering count (based on latitude/longitude density)
@@ -280,7 +223,7 @@ if page == "📊 Dashboard Overview":
     avg_crime_rate = total_crimes / len(districts[1:]) if len(districts) > 1 else 0
     high_risk_districts = len(district_counts[district_counts > (avg_crime_rate * 1.15)]) if len(district_counts) > 0 else 0
     
-    # 6.2 Display Metric Cards
+    # 5.2 Display Metric Cards
     kpi_col1, kpi_col2, kpi_col3, kpi_col4 = st.columns(4)
     with kpi_col1:
         draw_kpi_card("Total Crimes Registered", f"{total_crimes:,}", "Real-time ledger entries", "#3B82F6")
@@ -293,7 +236,7 @@ if page == "📊 Dashboard Overview":
         
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 6.3 Charts Section
+    # 5.3 Charts Section
     col_left, col_right = st.columns([8, 7])
     
     with col_left:
@@ -417,9 +360,7 @@ if page == "📊 Dashboard Overview":
     # Recent incident logs bottom grid
     st.subheader("📰 Recent Incident Logs")
     if not filtered_df.empty:
-        # Sort by Date (and by incident ID to keep order stable)
         recent_logs = filtered_df.sort_values(by=["Date", "Incident ID"], ascending=False).head(5)
-        # Select clean columns
         display_cols = ["Incident ID", "Date", "District", "Police Station", "Crime Category", "Status", "Victim Age", "Offender Age"]
         
         st.dataframe(
@@ -432,49 +373,37 @@ if page == "📊 Dashboard Overview":
 
 
 # ----------------------------------------------------
-# 7. Page 2: GIS Map Placeholder
+# 6. Page 2: GIS Map Component
 # ----------------------------------------------------
 elif page == "📍 GIS Mapping & Hotspots":
     render_header("GIS Mapping & Hotspots")
     
     st.subheader("🗺️ Spatial Distribution & Cluster Mapping")
     st.markdown(
-        "Interactive GIS tracking dashboard displaying actual geographical incident reports across Karnataka jurisdictions. "
-        "Filter locations below to examine local clustering patterns."
+        "Interactive GIS tracking dashboard utilizing spatial coordinate feeds. "
+        "The primary GIS view displays Folium HTML layers compiled and delivered via our GIS team's APIs."
     )
     
-    # 7.1 Selection Tabs
-    tab_scatter, tab_heatmap = st.tabs(["🔴 Incident Location Mapping", "🔥 Crime Density Heatmap"])
+    # Selection Tabs
+    tab_folium, tab_heatmap = st.tabs(["🗺️ Interactive Folium GIS Map (API Layer)", "🔥 Density Heatmap (Local Plotly)"])
     
-    with tab_scatter:
+    with tab_folium:
         if not filtered_df.empty:
-            # Mapbox Scatter Plot
-            fig_map = px.scatter_mapbox(
-                filtered_df, 
-                lat="Latitude", 
-                lon="Longitude", 
-                color="Crime Category", 
-                size="Severity_Val",
-                hover_name="Incident ID", 
-                hover_data=["District", "Police Station", "Severity", "Status"],
-                zoom=6.8, 
-                mapbox_style="carto-darkmatter",
-                color_discrete_sequence=px.colors.qualitative.Set1,
-                title="Geographical Coordinates of Registered Incidents"
-            )
-            fig_map.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                margin=dict(l=0, r=0, t=30, b=0),
-                height=550
-            )
-            st.plotly_chart(fig_map, use_container_width=True)
+            with st.spinner("Requesting Map Layer HTML from GIS Service..."):
+                # Fetch Folium map HTML string from API pipeline (Member 2)
+                folium_html_str = api_client.fetch_gis_map_layer(filtered_df)
+                
+            if folium_html_str:
+                # Embed HTML inside Streamlit page securely
+                st.components.v1.html(folium_html_str, height=550, scrolling=False)
+            else:
+                st.error("Failed to load map layer from GIS service pipeline.")
         else:
-            st.warning("No incidents map coordinates match your query filter criteria.")
+            st.warning("No incidents available to plot coordinates.")
             
     with tab_heatmap:
         if not filtered_df.empty:
-            # Mapbox Density Heatmap
+            # Local fallback rendering
             fig_heatmap = px.density_mapbox(
                 filtered_df,
                 lat="Latitude",
@@ -484,7 +413,7 @@ elif page == "📍 GIS Mapping & Hotspots":
                 zoom=6.8,
                 mapbox_style="carto-darkmatter",
                 color_continuous_scale="Viridis",
-                title="High-Density Crime Hotspots (Kernel Density Approximation)"
+                title="Crime Hotspots (Density Density Layout)"
             )
             fig_heatmap.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)',
@@ -494,9 +423,8 @@ elif page == "📍 GIS Mapping & Hotspots":
             )
             st.plotly_chart(fig_heatmap, use_container_width=True)
         else:
-            st.warning("No incident coordinates available to run density modeling.")
+            st.warning("No coordinates matches standard queries.")
 
-    # 7.2 Auxiliary Information
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -512,24 +440,24 @@ elif page == "📍 GIS Mapping & Hotspots":
 
 
 # ----------------------------------------------------
-# 8. Page 3: ML Predictions Placeholder
+# 7. Page 3: ML Predictions Component
 # ----------------------------------------------------
 elif page == "🔮 ML Crime Predictions":
     render_header("ML Crime Predictions")
     
     st.subheader("📊 Volume Forecasting & Recidivism Predictors")
     st.markdown(
-        "Leveraging historical datasets and ensemble regression algorithms, this interface projects future crime rates "
-        "and assesses individual recidivism risk factors."
+        "Integrating models developed by our AI/ML Intelligence Team (Member 3). "
+        "Exposes forecast projections and predictive assessment gauges."
     )
     
     tab_forecast, tab_recidivism = st.tabs(["📈 6-Month Crime Volume Forecast", "🧠 Recidivism Risk Assessor"])
     
     with tab_forecast:
         st.markdown("#### Monthly Crime Volume Predictions")
-        st.markdown("Forecasting regional crime rates based on ARIMA-LSTM hybrid network model runs.")
+        st.markdown("Forecasting monthly incident volume by parsing historical records and LSTM predictions.")
         
-        # 8.1 Construct Forecast Graph
+        # Construct monthly aggregated sequence to send/check with forecasting API
         df_monthly = filtered_df.copy()
         df_monthly['YearMonth'] = df_monthly['Date'].dt.to_period('M')
         monthly_trend = df_monthly.groupby('YearMonth').size().reset_index(name='Incidents')
@@ -537,79 +465,60 @@ elif page == "🔮 ML Crime Predictions":
         monthly_trend = monthly_trend.sort_values('YearMonth')
         
         if len(monthly_trend) >= 3:
-            last_date = monthly_trend['YearMonth'].iloc[-1]
-            forecast_dates = [last_date + timedelta(days=31*i) for i in range(1, 7)]
-            last_val = monthly_trend['Incidents'].iloc[-1]
-            
-            # Simulated model forecast with uncertainty
-            forecast_vals = []
-            upper_bound = []
-            lower_bound = []
-            
-            curr = last_val
-            for i in range(6):
-                # Simulated trend with slight variance
-                curr = curr * np.random.uniform(0.97, 1.04)
-                forecast_vals.append(curr)
-                # Expand uncertainty bounds over time
-                variance = curr * 0.15 * (i + 1)
-                upper_bound.append(curr + variance)
-                lower_bound.append(max(0, curr - variance))
+            with st.spinner("Requesting forecast trend from AI/ML Forecasting service..."):
+                # Fetch forecast DataFrame from API pipeline (Member 3)
+                forecast_df = api_client.fetch_forecast(monthly_trend)
                 
-            forecast_df = pd.DataFrame({
-                'YearMonth': forecast_dates,
-                'Incidents': forecast_vals,
-                'Upper': upper_bound,
-                'Lower': lower_bound
-            })
-            
-            # Combine for plotting
-            fig_fc = go.Figure()
-            
-            # Historical Line
-            fig_fc.add_trace(go.Scatter(
-                x=monthly_trend['YearMonth'], y=monthly_trend['Incidents'],
-                mode='lines+markers',
-                name='Historical Records',
-                line=dict(color='#3B82F6', width=3)
-            ))
-            
-            # Forecast Line
-            fig_fc.add_trace(go.Scatter(
-                x=forecast_df['YearMonth'], y=forecast_df['Incidents'],
-                mode='lines+markers',
-                name='Model Forecast',
-                line=dict(color='#F59E0B', width=3, dash='dash')
-            ))
-            
-            # Uncertainty Band
-            fig_fc.add_trace(go.Scatter(
-                x=forecast_df['YearMonth'].tolist() + forecast_df['YearMonth'].tolist()[::-1],
-                y=forecast_df['Upper'].tolist() + forecast_df['Lower'].tolist()[::-1],
-                fill='between',
-                fillcolor='rgba(245, 158, 11, 0.12)',
-                line=dict(color='rgba(255,255,255,0)'),
-                hoverinfo="skip",
-                name='95% Confidence Interval'
-            ))
-            
-            fig_fc.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                xaxis=dict(showgrid=True, gridcolor='#1e293b'),
-                yaxis=dict(showgrid=True, gridcolor='#1e293b'),
-                legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
-                margin=dict(l=20, r=20, t=10, b=50),
-                height=450
-            )
-            st.plotly_chart(fig_fc, use_container_width=True)
+            if not forecast_df.empty:
+                # Combine for plotting
+                fig_fc = go.Figure()
+                
+                # Historical Line
+                fig_fc.add_trace(go.Scatter(
+                    x=monthly_trend['YearMonth'], y=monthly_trend['Incidents'],
+                    mode='lines+markers',
+                    name='Historical Records',
+                    line=dict(color='#3B82F6', width=3)
+                ))
+                
+                # Forecast Line
+                fig_fc.add_trace(go.Scatter(
+                    x=forecast_df['YearMonth'], y=forecast_df['Incidents'],
+                    mode='lines+markers',
+                    name='Model Forecast',
+                    line=dict(color='#F59E0B', width=3, dash='dash')
+                ))
+                
+                # Uncertainty Band (Plotly Fix: fill='toself' boundary rendering)
+                fig_fc.add_trace(go.Scatter(
+                    x=forecast_df['YearMonth'].tolist() + forecast_df['YearMonth'].tolist()[::-1],
+                    y=forecast_df['Upper'].tolist() + forecast_df['Lower'].tolist()[::-1],
+                    fill='toself',
+                    fillcolor='rgba(245, 158, 11, 0.12)',
+                    line=dict(color='rgba(255,255,255,0)'),
+                    hoverinfo="skip",
+                    name='95% Confidence Interval'
+                ))
+                
+                fig_fc.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font_color='#94a3b8',
+                    xaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    yaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
+                    margin=dict(l=20, r=20, t=10, b=50),
+                    height=450
+                )
+                st.plotly_chart(fig_fc, use_container_width=True)
+            else:
+                st.error("Failed to load forecast trends from AI/ML API.")
         else:
-            st.info("Insufficient data points in current filter subset to compute ARIMA forecast layers. Select 'All Districts' to view details.")
+            st.info("Insufficient data points in current filter subset to compute forecast layers. Select 'All Districts' to view details.")
             
     with tab_recidivism:
-        st.markdown("#### Interactive Recidivism Risk Profiler")
-        st.write("Determine risk parameters based on demographic, historical offender profiles and environmental factors.")
+        st.markdown("#### Interactive Recidivism Risk Assessor (SHAP Supported)")
+        st.write("Determine risk parameters and explore explainable features using SHAP models.")
         
         # Calculate dynamic defaults from active filtered dataframe
         avg_age = int(filtered_df["Offender Age"].mean()) if not filtered_df.empty else 28
@@ -625,30 +534,15 @@ elif page == "🔮 ML Crime Predictions":
             rehab_status = st.radio("Completed Rehabilitation Programs", ["No", "Yes"])
             
         with col_gauge:
-            # Deterministic calculation + slight variance for risk score mapping
-            base_score = 15 + (prev_convictions * 12) - (age - 18) * 0.7
-            if employment == "Full-time Employed":
-                base_score -= 18
-            elif employment == "Unemployed":
-                base_score += 12
+            with st.spinner("Requesting risk profiling from AI/ML Prediction pipeline..."):
+                # Fetch prediction details from API pipeline (Member 3)
+                prediction = api_client.predict_recidivism(age, prev_convictions, offence_class, employment, rehab_status)
                 
-            if offence_class in ["Robbery", "Assault", "Burglary"]:
-                base_score += 15
-                
-            if rehab_status == "Yes":
-                base_score -= 15
-                
-            risk_score = min(max(int(base_score), 5), 98)
-            
-            if risk_score < 35:
-                risk_lbl = "LOW RISK"
-                risk_col = "#10B981"
-            elif risk_score < 70:
-                risk_lbl = "MODERATE RISK"
-                risk_col = "#F59E0B"
-            else:
-                risk_lbl = "HIGH RISK"
-                risk_col = "#EF4444"
+            risk_score = prediction["risk_score"]
+            risk_lbl = prediction["risk_label"]
+            risk_col = prediction["risk_color"]
+            shap_explanation = prediction["shap_explanation"]
+            intervention = prediction["intervention"]
                 
             fig_gauge = go.Figure(go.Indicator(
                 mode = "gauge+number",
@@ -671,59 +565,45 @@ elif page == "🔮 ML Crime Predictions":
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 font={'color': "white"},
-                height=300,
+                height=250,
                 margin=dict(l=20, r=20, t=50, b=20)
             )
             st.plotly_chart(fig_gauge, use_container_width=True)
             
             st.markdown(f"""
-            <div style="background-color: rgba(30, 41, 59, 0.5); border: 1px solid #334155; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="background-color: rgba(30, 41, 59, 0.5); border: 1px solid #334155; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                 <span style="font-weight: bold; color: {risk_col};">{risk_lbl} Profile Alert:</span>
-                Based on database models, this offender profile shows a <strong>{risk_score}%</strong> likelihood of re-offending. Recommended intervention: 
-                {"Standard monitoring check-ins." if risk_score < 35 else "Mandatory community counseling." if risk_score < 70 else "Intense supervision and probation alert list."}
+                Offender profile indicates a <strong>{risk_score}%</strong> probability of recidivism. Recommended Action: <strong>{intervention}</strong>
             </div>
             """, unsafe_allow_html=True)
 
+            # Display SHAP Text Explanations (Member 3 pipeline deliverable)
+            st.markdown("##### 🧠 SHAP Feature Explanations (AI Trace Log)")
+            st.code(shap_explanation, language="text")
+
 
 # ----------------------------------------------------
-# 9. Page 4: Criminal Network Analysis Placeholder
+# 8. Page 8: Criminal Network Analysis Component
 # ----------------------------------------------------
 elif page == "🕸️ Criminal Network Analysis":
     render_header("Criminal Network Analysis")
     
     st.subheader("🕸️ Syndicate Connectivity & Association Linkages")
     st.markdown(
-        "Mapping syndicate associations, accomplice communication vectors, and financial linkages. "
-        "Identify kingpins and bridge connections in active investigations."
+        "Visualizing relationship networks mapping connection links between active syndicate members. "
+        "This data layer represents Relational graphs delivered via Member 4's APIs."
     )
     
     col_net, col_profile = st.columns([9, 6])
     
-    # 9.1 Syndicate Network Setup (Representing main active syndicates in Karnataka)
-    nodes = {
-        "Vijay Gowda (Kingpin)": {"pos": (0, 0), "type": "Leader", "risk": "Critical", "cases": 12, "last_known": "Bengaluru Urban"},
-        "Rohan D'Souza (Finance)": {"pos": (1.2, 0.8), "type": "Lieutenant", "risk": "High", "cases": 8, "last_known": "Mangaluru"},
-        "Anand Kumar (Operations)": {"pos": (-1.2, 0.8), "type": "Lieutenant", "risk": "High", "cases": 9, "last_known": "Mysuru"},
-        "Shabir Ahmed (Logistics)": {"pos": (1.2, -0.8), "type": "Lieutenant", "risk": "High", "cases": 5, "last_known": "Kalaburagi"},
-        "Chethan S. (Enforcer)": {"pos": (-1.2, -0.8), "type": "Lieutenant", "risk": "High", "cases": 11, "last_known": "Belagavi"},
-        "Raghu Gowda (Associate)": {"pos": (2.3, 1.4), "type": "Associate", "risk": "Medium", "cases": 4, "last_known": "Tumakuru"},
-        "Sunil P. (Associate)": {"pos": (2.0, -1.5), "type": "Associate", "risk": "Medium", "cases": 3, "last_known": "Ballari"},
-        "Imran Ali (Associate)": {"pos": (-2.3, -1.4), "type": "Associate", "risk": "Medium", "cases": 2, "last_known": "Shivamogga"},
-        "Appu Swamy (Associate)": {"pos": (-2.0, 1.5), "type": "Associate", "risk": "Medium", "cases": 4, "last_known": "Dharwad"}
-    }
+    with st.spinner("Fetching Relational Network Graph data from Network API pipeline..."):
+        # Fetch node-link graph details from API pipeline (Member 4)
+        graph_data = api_client.fetch_network_graph()
+        # Fetch Suspect profile list from API pipeline (Member 1)
+        suspects_profile_list = api_client.fetch_suspects()
     
-    edges = [
-        ("Vijay Gowda (Kingpin)", "Rohan D'Souza (Finance)"),
-        ("Vijay Gowda (Kingpin)", "Anand Kumar (Operations)"),
-        ("Vijay Gowda (Kingpin)", "Shabir Ahmed (Logistics)"),
-        ("Vijay Gowda (Kingpin)", "Chethan S. (Enforcer)"),
-        ("Rohan D'Souza (Finance)", "Raghu Gowda (Associate)"),
-        ("Shabir Ahmed (Logistics)", "Sunil P. (Associate)"),
-        ("Chethan S. (Enforcer)", "Imran Ali (Associate)"),
-        ("Anand Kumar (Operations)", "Appu Swamy (Associate)"),
-        ("Anand Kumar (Operations)", "Rohan D'Souza (Finance)"),
-        ("Shabir Ahmed (Logistics)", "Chethan S. (Enforcer)")
-    ]
+    nodes = graph_data["nodes"]
+    edges = graph_data["edges"]
     
     with col_net:
         # Create Scatter Plot for Network Structure
@@ -733,10 +613,11 @@ elif page == "🕸️ Criminal Network Analysis":
         edge_x = []
         edge_y = []
         for edge in edges:
-            x0, y0 = nodes[edge[0]]["pos"]
-            x1, y1 = nodes[edge[1]]["pos"]
-            edge_x.extend([x0, x1, None])
-            edge_y.extend([y0, y1, None])
+            # Find coordinates for source and target nodes
+            source_node = next(n for n in nodes if n["id"] == edge["source"])
+            target_node = next(n for n in nodes if n["id"] == edge["target"])
+            edge_x.extend([source_node["x"], target_node["x"], None])
+            edge_y.extend([source_node["y"], target_node["y"], None])
             
         fig_net.add_trace(go.Scatter(
             x=edge_x, y=edge_y,
@@ -752,28 +633,27 @@ elif page == "🕸️ Criminal Network Analysis":
         node_color = []
         node_size = []
         
-        for name, info in nodes.items():
-            x, y = info["pos"]
-            node_x.append(x)
-            node_y.append(y)
-            node_text.append(f"Name: {name}<br>Role: {info['type']}<br>Risk Rating: {info['risk']}<br>FIR Cases: {info['cases']}")
+        for info in nodes:
+            node_x.append(info["x"])
+            node_y.append(info["y"])
+            node_text.append(f"Name: {info['id']}<br>Role: {info['type']}<br>Risk Rating: {info['risk']}<br>FIR Cases: {info['cases']}")
             
             # Node Coloring
             if info["risk"] == "Critical":
-                node_color.append("#EF4444")  # Red
+                node_color.append("#EF4444")
                 node_size.append(28)
             elif info["risk"] == "High":
-                node_color.append("#F59E0B")  # Amber
+                node_color.append("#F59E0B")
                 node_size.append(22)
             else:
-                node_color.append("#3B82F6")  # Blue
+                node_color.append("#3B82F6")
                 node_size.append(16)
                 
         fig_net.add_trace(go.Scatter(
             x=node_x, y=node_y,
             mode='markers+text',
             hoverinfo='text',
-            text=[n.split(" (")[0] for n in nodes.keys()],
+            text=[n["id"].split(" (")[0] for n in nodes],
             textposition="top center",
             hovertext=node_text,
             marker=dict(
@@ -784,7 +664,7 @@ elif page == "🕸️ Criminal Network Analysis":
         ))
         
         fig_net.update_layout(
-            title="Interactive Link-Node Gang Association Map",
+            title="Relational Association Map (Syndicate Grid)",
             showlegend=False,
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
@@ -799,8 +679,8 @@ elif page == "🕸️ Criminal Network Analysis":
         st.subheader("👤 Suspect Profile Details")
         
         # Pick Suspect
-        suspect_key = st.selectbox("Select Target Suspect Profile", list(nodes.keys()))
-        s_info = nodes[suspect_key]
+        suspect_key = st.selectbox("Select Target Suspect Profile", list(suspects_profile_list.keys()))
+        s_info = suspects_profile_list[suspect_key]
         
         # Display Suspect Metadata card
         risk_badge_color = {"Critical": "#EF4444", "High": "#F59E0B", "Medium": "#3B82F6"}[s_info["risk"]]
@@ -840,8 +720,8 @@ elif page == "🕸️ Criminal Network Analysis":
         # Display direct associates
         associates = []
         for edge in edges:
-            if suspect_key in edge:
-                other = edge[0] if edge[1] == suspect_key else edge[1]
+            if suspect_key == edge["source"] or suspect_key == edge["target"]:
+                other = edge["source"] if edge["target"] == suspect_key else edge["target"]
                 associates.append(other.split(' (')[0])
                 
         st.markdown("##### 👥 Direct Linkage Connections:")
