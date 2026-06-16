@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import os
 import random
 from datetime import datetime, timedelta
 
@@ -61,19 +62,54 @@ st.markdown("""
 
 
 # ----------------------------------------------------
-# 3. Helper Functions & Mock Data Generation
+# 3. Data Loading (Real CSV with Mock Fallback)
 # ----------------------------------------------------
 @st.cache_data
-def generate_mock_data():
-    """Generates realistic mock crime data for Karnataka State Police."""
+def load_crime_data():
+    """Loads crime data from dashboard/crime_data.csv if exists, otherwise generates mock data."""
+    csv_path = "dashboard/crime_data.csv"
+    
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+            # Parse dates
+            df["Date"] = pd.to_datetime(df["date"])
+            
+            # Map CSV columns to dashboard variables
+            df["Incident ID"] = df["crime_id"]
+            df["District"] = df["district"]
+            df["Crime Category"] = df["crime_type"]
+            df["Latitude"] = df["latitude"]
+            df["Longitude"] = df["longitude"]
+            df["Status"] = df["status"]
+            df["Repeat Offender"] = df["repeat_offender"].astype(bool)
+            df["Victim Age"] = df["victim_age"]
+            df["Offender Age"] = df["offender_age"]
+            df["Police Station"] = df["police_station"]
+            
+            # Severity mapping based on crime category
+            severity_map = {
+                "Vehicle Theft": "Low",
+                "Theft": "Low",
+                "Cybercrime": "Medium",
+                "Drug Offence": "Medium",
+                "Fraud": "Medium",
+                "Assault": "High",
+                "Burglary": "High",
+                "Robbery": "High"
+            }
+            df["Severity"] = df["Crime Category"].map(severity_map).fillna("Medium")
+            df["Severity_Val"] = df["Severity"].map({"Low": 6, "Medium": 12, "High": 22})
+            return df
+        except Exception as e:
+            st.error(f"Error loading crime_data.csv: {e}. Falling back to mock generator.")
+            
+    # --- Mock Fallback Generator ---
     districts = ["Bengaluru City", "Mysuru", "Hubballi-Dharwad", "Mangaluru", "Belagavi", "Kalaburagi"]
     crime_categories = ["Theft", "Cyber Crime", "Assault", "Narcotics", "Robbery"]
-    
-    # Set seed for reproducibility
     np.random.seed(1703)
     start_date = datetime.now() - timedelta(days=365)
     
-    # Coordinates mapping for districts
     coords = {
         "Bengaluru City": (12.9716, 77.5946),
         "Mysuru": (12.2958, 76.6394),
@@ -84,18 +120,14 @@ def generate_mock_data():
     }
     
     records = []
-    for i in range(1200):
+    for i in range(1000):
         district = np.random.choice(districts)
         base_lat, base_lon = coords[district]
-        
-        # Add random scatter to form clusters/hotspots
         lat = base_lat + np.random.normal(0, 0.06)
         lon = base_lon + np.random.normal(0, 0.06)
-        
         crime = np.random.choice(crime_categories)
         days_offset = np.random.randint(0, 365)
         date = start_date + timedelta(days=days_offset)
-        
         severity = np.random.choice(["Low", "Medium", "High"], p=[0.45, 0.35, 0.20])
         repeat_offender = np.random.choice([True, False], p=[0.22, 0.78])
         status = np.random.choice(["Solved", "Under Investigation", "Unsolved"], p=[0.60, 0.30, 0.10])
@@ -109,16 +141,17 @@ def generate_mock_data():
             "Longitude": lon,
             "Severity": severity,
             "Repeat Offender": repeat_offender,
-            "Status": status
+            "Status": status,
+            "Victim Age": np.random.randint(18, 75),
+            "Offender Age": np.random.randint(18, 65)
         })
         
     df = pd.DataFrame(records)
-    # Severity value for mapping sized bubbles
     df["Severity_Val"] = df["Severity"].map({"Low": 6, "Medium": 12, "High": 22})
     return df
 
-# Load mock data
-df_all = generate_mock_data()
+# Load datasets
+df_all = load_crime_data()
 
 
 # ----------------------------------------------------
@@ -167,7 +200,7 @@ def draw_kpi_card(title, value, subtitle, border_color="#3B82F6"):
 st.sidebar.markdown("""
 <div style="text-align: center; padding: 15px 0 5px 0;">
     <h2 style="color: #eab308; font-size: 20px; font-weight: 800; margin: 0; font-family: 'Outfit';">KSP INTELLIGENCE</h2>
-    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Command Portal v1.2</p>
+    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Command Portal v1.5</p>
 </div>
 <hr style="margin-top: 10px; margin-bottom: 20px; border-color: #334155;" />
 """, unsafe_allow_html=True)
@@ -183,28 +216,32 @@ st.sidebar.markdown("<hr style='border-color: #334155; margin: 20px 0;' />", uns
 st.sidebar.subheader("🔍 Query Filters")
 
 # District Filter
-districts = ["All Districts"] + list(df_all["District"].unique())
+districts = ["All Districts"] + sorted(list(df_all["District"].unique()))
 selected_district = st.sidebar.selectbox("Jurisdiction", districts)
 
-# Crime Class Filter
-crime_categories = ["All Categories"] + list(df_all["Crime Category"].unique())
+# Crime Category Filter
+crime_categories = ["All Categories"] + sorted(list(df_all["Crime Category"].unique()))
 selected_crime = st.sidebar.selectbox("Offense Category", crime_categories)
 
 # Time Frame Filter
 time_filter = st.sidebar.selectbox(
     "Reporting Period",
-    ["Last 12 Months", "Last 6 Months", "Last 30 Days"]
+    ["All Time", "Last 12 Months", "Last 6 Months", "Last 30 Days"]
 )
 
 # Apply Filter logic
 filtered_df = df_all.copy()
 
-# Date filter
-if time_filter == "Last 6 Months":
-    cutoff = datetime.now() - timedelta(days=180)
+# Date filtering (relative to max date in database for robust handling of static data)
+max_date = df_all["Date"].max()
+if time_filter == "Last 12 Months":
+    cutoff = max_date - timedelta(days=365)
+    filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
+elif time_filter == "Last 6 Months":
+    cutoff = max_date - timedelta(days=180)
     filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
 elif time_filter == "Last 30 Days":
-    cutoff = datetime.now() - timedelta(days=30)
+    cutoff = max_date - timedelta(days=30)
     filtered_df = filtered_df[filtered_df["Date"] >= cutoff]
 
 # District filter
@@ -225,34 +262,34 @@ if page == "📊 Dashboard Overview":
     # 6.1 Core Metrics Calculation
     total_crimes = len(filtered_df)
     
-    # Let's count Hotspots based on density approximation
-    # Group coordinates to round values representing dense areas
+    # Hotspot grid clustering count (based on latitude/longitude density)
     filtered_df['lat_round'] = filtered_df['Latitude'].round(2)
     filtered_df['lon_round'] = filtered_df['Longitude'].round(2)
-    hotspots_count = filtered_df.groupby(['lat_round', 'lon_round']).filter(lambda x: len(x) >= 6)['lat_round'].nunique()
+    hotspots_count = filtered_df.groupby(['lat_round', 'lon_round']).filter(lambda x: len(x) >= 3)['lat_round'].nunique()
     # Default minimum hotspots
     if hotspots_count == 0 and total_crimes > 0:
-        hotspots_count = int(total_crimes * 0.03) + 1
+        hotspots_count = int(total_crimes * 0.05) + 1
     elif total_crimes == 0:
         hotspots_count = 0
         
     repeat_offenders_count = len(filtered_df[filtered_df["Repeat Offender"] == True])
     repeat_pct = (repeat_offenders_count / total_crimes * 100) if total_crimes > 0 else 0
     
-    # Districts status calculation
+    # High Risk jurisdictions calculation
     district_counts = filtered_df.groupby("District").size()
-    high_risk_districts = len(district_counts[district_counts > (total_crimes / len(districts) * 1.1)]) if len(district_counts) > 0 else 0
+    avg_crime_rate = total_crimes / len(districts[1:]) if len(districts) > 1 else 0
+    high_risk_districts = len(district_counts[district_counts > (avg_crime_rate * 1.15)]) if len(district_counts) > 0 else 0
     
     # 6.2 Display Metric Cards
     kpi_col1, kpi_col2, kpi_col3, kpi_col4 = st.columns(4)
     with kpi_col1:
-        draw_kpi_card("Total Crimes Registered", f"{total_crimes:,}", "↓ 4.2% from prior period", "#3B82F6")
+        draw_kpi_card("Total Crimes Registered", f"{total_crimes:,}", "Real-time ledger entries", "#3B82F6")
     with kpi_col2:
-        draw_kpi_card("Hotspots Detected", f"{hotspots_count}", "Active high-risk clusters", "#EF4444")
+        draw_kpi_card("Hotspots Detected", f"{hotspots_count}", "Dense incident coordinates", "#EF4444")
     with kpi_col3:
         draw_kpi_card("Repeat Offenders", f"{repeat_offenders_count:,}", f"{repeat_pct:.1f}% Recidivism rate", "#F59E0B")
     with kpi_col4:
-        draw_kpi_card("High Risk Jurisdictions", f"{high_risk_districts}", "Under critical surveillance", "#10B981")
+        draw_kpi_card("High Risk Districts", f"{high_risk_districts}", "Exceeding crime average thresholds", "#10B981")
         
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -267,6 +304,7 @@ if page == "📊 Dashboard Overview":
         df_monthly['YearMonth'] = df_monthly['Date'].dt.to_period('M')
         monthly_trend = df_monthly.groupby('YearMonth').size().reset_index(name='Incident Count')
         monthly_trend['YearMonth'] = monthly_trend['YearMonth'].dt.to_timestamp()
+        monthly_trend = monthly_trend.sort_values('YearMonth')
         
         if not monthly_trend.empty:
             fig_trend = px.line(
@@ -288,10 +326,9 @@ if page == "📊 Dashboard Overview":
             )
             st.plotly_chart(fig_trend, use_container_width=True)
         else:
-            st.info("No data available for the selected filters.")
+            st.info("No timeline trajectory available for the selected filters.")
 
         st.subheader("📊 Category Classification Analysis")
-        # Donut Chart for crime classes
         if not filtered_df.empty:
             category_counts = filtered_df["Crime Category"].value_counts().reset_index()
             category_counts.columns = ["Category", "Count"]
@@ -314,12 +351,10 @@ if page == "📊 Dashboard Overview":
             )
             st.plotly_chart(fig_pie, use_container_width=True)
         else:
-            st.info("No category data available.")
+            st.info("No category classification metrics found.")
             
     with col_right:
         st.subheader("🏢 Distribution by Police District")
-        
-        # Bar chart for districts
         if not filtered_df.empty:
             district_counts = filtered_df["District"].value_counts().reset_index()
             district_counts.columns = ["District", "Incidents"]
@@ -344,19 +379,56 @@ if page == "📊 Dashboard Overview":
             )
             st.plotly_chart(fig_bar, use_container_width=True)
         else:
-            st.info("No district data available.")
+            st.info("No district layout records match queries.")
             
-        st.subheader("📰 Recent Incident Logs")
+        st.subheader("👥 Victim vs Offender Age Profile")
         if not filtered_df.empty:
-            recent_logs = filtered_df.sort_values(by="Date", ascending=False).head(5)
-            # Style table representation
-            st.dataframe(
-                recent_logs[["Incident ID", "Date", "District", "Crime Category", "Severity", "Status"]],
-                use_container_width=True,
-                hide_index=True
+            # Overlay histograms for ages
+            fig_age = go.Figure()
+            fig_age.add_trace(go.Histogram(
+                x=filtered_df["Victim Age"],
+                name="Victim Age",
+                xbins=dict(start=10, end=90, size=5),
+                marker_color='#10B981',
+                opacity=0.6
+            ))
+            fig_age.add_trace(go.Histogram(
+                x=filtered_df["Offender Age"],
+                name="Offender Age",
+                xbins=dict(start=10, end=90, size=5),
+                marker_color='#E63946',
+                opacity=0.6
+            ))
+            fig_age.update_layout(
+                barmode='overlay',
+                paper_bgcolor='rgba(0,0,0,0)',
+                plot_bgcolor='rgba(0,0,0,0)',
+                font_color='#94a3b8',
+                xaxis=dict(title='Age (Years)', showgrid=True, gridcolor='#1e293b'),
+                yaxis=dict(title='Count', showgrid=True, gridcolor='#1e293b'),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                margin=dict(l=20, r=20, t=30, b=20),
+                height=320
             )
+            st.plotly_chart(fig_age, use_container_width=True)
         else:
-            st.info("No logs found.")
+            st.info("No age demographics available.")
+
+    # Recent incident logs bottom grid
+    st.subheader("📰 Recent Incident Logs")
+    if not filtered_df.empty:
+        # Sort by Date (and by incident ID to keep order stable)
+        recent_logs = filtered_df.sort_values(by=["Date", "Incident ID"], ascending=False).head(5)
+        # Select clean columns
+        display_cols = ["Incident ID", "Date", "District", "Police Station", "Crime Category", "Status", "Victim Age", "Offender Age"]
+        
+        st.dataframe(
+            recent_logs[display_cols].assign(Date=recent_logs["Date"].dt.strftime('%Y-%m-%d')),
+            use_container_width=True,
+            hide_index=True
+        )
+    else:
+        st.info("No recent logs found.")
 
 
 # ----------------------------------------------------
@@ -367,8 +439,8 @@ elif page == "📍 GIS Mapping & Hotspots":
     
     st.subheader("🗺️ Spatial Distribution & Cluster Mapping")
     st.markdown(
-        "Interactive GIS tracking dashboard utilizing simulated GPS telemetry from emergency responder networks. "
-        "Filter and analyze clustering patterns to allocate patrol assets efficiently."
+        "Interactive GIS tracking dashboard displaying actual geographical incident reports across Karnataka jurisdictions. "
+        "Filter locations below to examine local clustering patterns."
     )
     
     # 7.1 Selection Tabs
@@ -384,11 +456,11 @@ elif page == "📍 GIS Mapping & Hotspots":
                 color="Crime Category", 
                 size="Severity_Val",
                 hover_name="Incident ID", 
-                hover_data=["District", "Severity", "Status"],
+                hover_data=["District", "Police Station", "Severity", "Status"],
                 zoom=6.8, 
                 mapbox_style="carto-darkmatter",
                 color_discrete_sequence=px.colors.qualitative.Set1,
-                title="Geographical Plot of Registered Incidents"
+                title="Geographical Coordinates of Registered Incidents"
             )
             fig_map.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)',
@@ -539,11 +611,16 @@ elif page == "🔮 ML Crime Predictions":
         st.markdown("#### Interactive Recidivism Risk Profiler")
         st.write("Determine risk parameters based on demographic, historical offender profiles and environmental factors.")
         
+        # Calculate dynamic defaults from active filtered dataframe
+        avg_age = int(filtered_df["Offender Age"].mean()) if not filtered_df.empty else 28
+        avg_repeat_offenses = int(filtered_df[filtered_df["Repeat Offender"] == True].groupby("Offender Age").size().mean()) if not filtered_df.empty else 1
+        avg_repeat_offenses = min(max(avg_repeat_offenses, 0), 15)
+        
         col_inp, col_gauge = st.columns([1, 1])
         with col_inp:
-            age = st.slider("Offender Age", 18, 90, 27)
-            prev_convictions = st.slider("Prior Offences Count", 0, 15, 3)
-            offence_class = st.selectbox("Offence Category Profile", ["Theft", "Cyber Crime", "Assault", "Narcotics", "Robbery"])
+            age = st.slider("Offender Age", 18, 90, avg_age)
+            prev_convictions = st.slider("Prior Offences Count", 0, 15, avg_repeat_offenses)
+            offence_class = st.selectbox("Offence Category Profile", sorted(list(df_all["Crime Category"].unique())))
             employment = st.selectbox("Employment Status Profile", ["Unemployed", "Underemployed / Part-time", "Full-time Employed"])
             rehab_status = st.radio("Completed Rehabilitation Programs", ["No", "Yes"])
             
@@ -555,7 +632,7 @@ elif page == "🔮 ML Crime Predictions":
             elif employment == "Unemployed":
                 base_score += 12
                 
-            if offence_class in ["Robbery", "Narcotics"]:
+            if offence_class in ["Robbery", "Assault", "Burglary"]:
                 base_score += 15
                 
             if rehab_status == "Yes":
@@ -602,7 +679,7 @@ elif page == "🔮 ML Crime Predictions":
             st.markdown(f"""
             <div style="background-color: rgba(30, 41, 59, 0.5); border: 1px solid #334155; padding: 15px; border-radius: 8px; text-align: center;">
                 <span style="font-weight: bold; color: {risk_col};">{risk_lbl} Profile Alert:</span>
-                Based on historical patterns, this offender profile shows a <strong>{risk_score}%</strong> likelihood of re-offending. Recommended intervention: 
+                Based on database models, this offender profile shows a <strong>{risk_score}%</strong> likelihood of re-offending. Recommended intervention: 
                 {"Standard monitoring check-ins." if risk_score < 35 else "Mandatory community counseling." if risk_score < 70 else "Intense supervision and probation alert list."}
             </div>
             """, unsafe_allow_html=True)
@@ -622,17 +699,17 @@ elif page == "🕸️ Criminal Network Analysis":
     
     col_net, col_profile = st.columns([9, 6])
     
-    # 9.1 Syndicate Network Setup
+    # 9.1 Syndicate Network Setup (Representing main active syndicates in Karnataka)
     nodes = {
-        "Vijay Gowda (Kingpin)": {"pos": (0, 0), "type": "Leader", "risk": "Critical", "cases": 12},
-        "Rohan D'Souza (Finance)": {"pos": (1.2, 0.8), "type": "Lieutenant", "risk": "High", "cases": 8},
-        "Anand Kumar (Operations)": {"pos": (-1.2, 0.8), "type": "Lieutenant", "risk": "High", "cases": 9},
-        "Shabir Ahmed (Logistics)": {"pos": (1.2, -0.8), "type": "Lieutenant", "risk": "High", "cases": 5},
-        "Chethan S. (Enforcer)": {"pos": (-1.2, -0.8), "type": "Lieutenant", "risk": "High", "cases": 11},
-        "Raghu Gowda (Associate)": {"pos": (2.3, 1.4), "type": "Associate", "risk": "Medium", "cases": 4},
-        "Sunil P. (Associate)": {"pos": (2.0, -1.5), "type": "Associate", "risk": "Medium", "cases": 3},
-        "Imran Ali (Associate)": {"pos": (-2.3, -1.4), "type": "Associate", "risk": "Medium", "cases": 2},
-        "Appu Swamy (Associate)": {"pos": (-2.0, 1.5), "type": "Associate", "risk": "Medium", "cases": 4}
+        "Vijay Gowda (Kingpin)": {"pos": (0, 0), "type": "Leader", "risk": "Critical", "cases": 12, "last_known": "Bengaluru Urban"},
+        "Rohan D'Souza (Finance)": {"pos": (1.2, 0.8), "type": "Lieutenant", "risk": "High", "cases": 8, "last_known": "Mangaluru"},
+        "Anand Kumar (Operations)": {"pos": (-1.2, 0.8), "type": "Lieutenant", "risk": "High", "cases": 9, "last_known": "Mysuru"},
+        "Shabir Ahmed (Logistics)": {"pos": (1.2, -0.8), "type": "Lieutenant", "risk": "High", "cases": 5, "last_known": "Kalaburagi"},
+        "Chethan S. (Enforcer)": {"pos": (-1.2, -0.8), "type": "Lieutenant", "risk": "High", "cases": 11, "last_known": "Belagavi"},
+        "Raghu Gowda (Associate)": {"pos": (2.3, 1.4), "type": "Associate", "risk": "Medium", "cases": 4, "last_known": "Tumakuru"},
+        "Sunil P. (Associate)": {"pos": (2.0, -1.5), "type": "Associate", "risk": "Medium", "cases": 3, "last_known": "Ballari"},
+        "Imran Ali (Associate)": {"pos": (-2.3, -1.4), "type": "Associate", "risk": "Medium", "cases": 2, "last_known": "Shivamogga"},
+        "Appu Swamy (Associate)": {"pos": (-2.0, 1.5), "type": "Associate", "risk": "Medium", "cases": 4, "last_known": "Dharwad"}
     }
     
     edges = [
@@ -748,7 +825,7 @@ elif page == "🕸️ Criminal Network Analysis":
                 </tr>
                 <tr style="border-bottom: 1px solid #334155;">
                     <td style="padding: 8px 0; font-weight: bold;">Last Tracker Position:</td>
-                    <td style="padding: 8px 0; text-align: right;">{selected_district if selected_district != "All Districts" else "Bengaluru Area"}</td>
+                    <td style="padding: 8px 0; text-align: right; color: #38bdf8; font-weight: bold;">{s_info["last_known"]}</td>
                 </tr>
                 <tr>
                     <td style="padding: 8px 0; font-weight: bold;">Status Flag:</td>
