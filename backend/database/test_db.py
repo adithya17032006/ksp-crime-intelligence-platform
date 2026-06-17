@@ -7,10 +7,12 @@ tables = [
     "district_anomalies",
     "patrol_priority",
     "monthly_crime_trends",
-    "weekday_crime_trends"
+    "weekday_crime_trends",
+    "hotspot_centroids"
 ]
 
 for table in tables:
+
     print(f"\n===== {table} =====")
 
     df = pd.read_sql(
