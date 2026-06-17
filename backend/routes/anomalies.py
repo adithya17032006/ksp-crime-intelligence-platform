@@ -1,15 +1,9 @@
 from fastapi import APIRouter
-import pandas as pd
+from services.anomaly_service import get_anomaly_data
 
 router = APIRouter()
 
 @router.get("/anomalies")
-def get_anomalies():
+def anomalies():
 
-    df = pd.read_csv(
-        "../data/processed/district_anomalies.csv"
-    )
-
-    return df.to_dict(
-        orient="records"
-    )
+    return get_anomaly_data()

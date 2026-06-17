@@ -1,15 +1,9 @@
 from fastapi import APIRouter
-import pandas as pd
+from services.patrol_service import get_patrol_data
 
 router = APIRouter()
 
 @router.get("/patrol-priority")
-def get_patrol_priority():
+def patrol_priority():
 
-    df = pd.read_csv(
-        "../data/processed/district_patrol_priority.csv"
-    )
-
-    return df.to_dict(
-        orient="records"
-    )
+    return get_patrol_data()
