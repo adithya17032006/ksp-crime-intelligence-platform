@@ -70,7 +70,7 @@ st.markdown("""
 st.sidebar.markdown("""
 <div style="text-align: center; padding: 15px 0 5px 0;">
     <h2 style="color: #eab308; font-size: 20px; font-weight: 800; margin: 0; font-family: 'Outfit';">KSP INTELLIGENCE</h2>
-    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Command Portal v2.0</p>
+    <p style="color: #94a3b8; font-size: 12px; margin: 0;">Command Portal v2.2</p>
 </div>
 <hr style="margin-top: 10px; margin-bottom: 20px; border-color: #334155;" />
 """, unsafe_allow_html=True)
@@ -236,126 +236,189 @@ if page == "📊 Dashboard Overview":
         
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # 5.3 Charts Section
-    col_left, col_right = st.columns([8, 7])
+    # 5.3 Tabbed Dashboard Sections (Overview Metrics & GIS/ML deliverables)
+    tab_analytics, tab_processed_models = st.tabs(["📊 Incident Analytics", "🧠 GIS / ML Model Deliverables"])
     
-    with col_left:
-        st.subheader("📈 Monthly Incident Trajectory")
+    with tab_analytics:
+        col_left, col_right = st.columns([8, 7])
         
-        # Monthly aggregates for line chart
-        df_monthly = filtered_df.copy()
-        df_monthly['YearMonth'] = df_monthly['Date'].dt.to_period('M')
-        monthly_trend = df_monthly.groupby('YearMonth').size().reset_index(name='Incident Count')
-        monthly_trend['YearMonth'] = monthly_trend['YearMonth'].dt.to_timestamp()
-        monthly_trend = monthly_trend.sort_values('YearMonth')
-        
-        if not monthly_trend.empty:
-            fig_trend = px.line(
-                monthly_trend, 
-                x='YearMonth', 
-                y='Incident Count',
-                labels={'Incident Count': 'Incidents', 'YearMonth': 'Month'},
-                color_discrete_sequence=['#3B82F6']
-            )
-            fig_trend.update_traces(mode='lines+markers', line=dict(width=3), marker=dict(size=8, color="#facc15"))
-            fig_trend.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                xaxis=dict(showgrid=True, gridcolor='#1e293b'),
-                yaxis=dict(showgrid=True, gridcolor='#1e293b'),
-                margin=dict(l=20, r=20, t=10, b=20),
-                height=320
-            )
-            st.plotly_chart(fig_trend, use_container_width=True)
-        else:
-            st.info("No timeline trajectory available for the selected filters.")
+        with col_left:
+            st.subheader("📈 Monthly Incident Trajectory")
+            df_monthly = filtered_df.copy()
+            df_monthly['YearMonth'] = df_monthly['Date'].dt.to_period('M')
+            monthly_trend = df_monthly.groupby('YearMonth').size().reset_index(name='Incident Count')
+            monthly_trend['YearMonth'] = monthly_trend['YearMonth'].dt.to_timestamp()
+            monthly_trend = monthly_trend.sort_values('YearMonth')
+            
+            if not monthly_trend.empty:
+                fig_trend = px.line(
+                    monthly_trend, 
+                    x='YearMonth', 
+                    y='Incident Count',
+                    labels={'Incident Count': 'Incidents', 'YearMonth': 'Month'},
+                    color_discrete_sequence=['#3B82F6']
+                )
+                fig_trend.update_traces(mode='lines+markers', line=dict(width=3), marker=dict(size=8, color="#facc15"))
+                fig_trend.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font_color='#94a3b8',
+                    xaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    yaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    margin=dict(l=20, r=20, t=10, b=20),
+                    height=320
+                )
+                st.plotly_chart(fig_trend, use_container_width=True)
+            else:
+                st.info("No timeline trajectory available.")
 
-        st.subheader("📊 Category Classification Analysis")
-        if not filtered_df.empty:
-            category_counts = filtered_df["Crime Category"].value_counts().reset_index()
-            category_counts.columns = ["Category", "Count"]
-            
-            fig_pie = px.pie(
-                category_counts, 
-                values='Count', 
-                names='Category',
-                hole=0.45,
-                color_discrete_sequence=px.colors.qualitative.Dark24
-            )
-            fig_pie.update_traces(textinfo='percent+label', marker=dict(line=dict(color='#0f172a', width=2)))
-            fig_pie.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-                margin=dict(l=10, r=10, t=10, b=50),
-                height=320
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
-        else:
-            st.info("No category classification metrics found.")
-            
-    with col_right:
-        st.subheader("🏢 Distribution by Police District")
-        if not filtered_df.empty:
-            district_counts = filtered_df["District"].value_counts().reset_index()
-            district_counts.columns = ["District", "Incidents"]
-            
-            fig_bar = px.bar(
-                district_counts.sort_values(by="Incidents", ascending=True), 
-                x='Incidents', 
-                y='District', 
-                orientation='h',
-                color='Incidents',
-                color_continuous_scale='Blues'
-            )
-            fig_bar.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                coloraxis_showscale=False,
-                xaxis=dict(showgrid=True, gridcolor='#1e293b'),
-                yaxis=dict(showgrid=False),
-                margin=dict(l=20, r=20, t=10, b=20),
-                height=320
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
-        else:
-            st.info("No district layout records match queries.")
-            
-        st.subheader("👥 Victim vs Offender Age Profile")
-        if not filtered_df.empty:
-            # Overlay histograms for ages
-            fig_age = go.Figure()
-            fig_age.add_trace(go.Histogram(
-                x=filtered_df["Victim Age"],
-                name="Victim Age",
-                xbins=dict(start=10, end=90, size=5),
-                marker_color='#10B981',
-                opacity=0.6
-            ))
-            fig_age.add_trace(go.Histogram(
-                x=filtered_df["Offender Age"],
-                name="Offender Age",
-                xbins=dict(start=10, end=90, size=5),
-                marker_color='#E63946',
-                opacity=0.6
-            ))
-            fig_age.update_layout(
-                barmode='overlay',
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                xaxis=dict(title='Age (Years)', showgrid=True, gridcolor='#1e293b'),
-                yaxis=dict(title='Count', showgrid=True, gridcolor='#1e293b'),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                margin=dict(l=20, r=20, t=30, b=20),
-                height=320
-            )
-            st.plotly_chart(fig_age, use_container_width=True)
-        else:
-            st.info("No age demographics available.")
+            st.subheader("📊 Category Classification Analysis")
+            if not filtered_df.empty:
+                category_counts = filtered_df["Crime Category"].value_counts().reset_index()
+                category_counts.columns = ["Category", "Count"]
+                
+                fig_pie = px.pie(
+                    category_counts, 
+                    values='Count', 
+                    names='Category',
+                    hole=0.45,
+                    color_discrete_sequence=px.colors.qualitative.Dark24
+                )
+                fig_pie.update_traces(textinfo='percent+label', marker=dict(line=dict(color='#0f172a', width=2)))
+                fig_pie.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font_color='#94a3b8',
+                    legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
+                    margin=dict(l=10, r=10, t=10, b=50),
+                    height=320
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+            else:
+                st.info("No category classification metrics found.")
+                
+        with col_right:
+            st.subheader("🏢 Distribution by Police District")
+            if not filtered_df.empty:
+                district_counts = filtered_df["District"].value_counts().reset_index()
+                district_counts.columns = ["District", "Incidents"]
+                
+                fig_bar = px.bar(
+                    district_counts.sort_values(by="Incidents", ascending=True), 
+                    x='Incidents', 
+                    y='District', 
+                    orientation='h',
+                    color='Incidents',
+                    color_continuous_scale='Blues'
+                )
+                fig_bar.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font_color='#94a3b8',
+                    coloraxis_showscale=False,
+                    xaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    yaxis=dict(showgrid=False),
+                    margin=dict(l=20, r=20, t=10, b=20),
+                    height=320
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+            else:
+                st.info("No district layout records match queries.")
+                
+            st.subheader("👥 Victim vs Offender Age Profile")
+            if not filtered_df.empty:
+                fig_age = go.Figure()
+                fig_age.add_trace(go.Histogram(
+                    x=filtered_df["Victim Age"],
+                    name="Victim Age",
+                    xbins=dict(start=10, end=90, size=5),
+                    marker_color='#10B981',
+                    opacity=0.6
+                ))
+                fig_age.add_trace(go.Histogram(
+                    x=filtered_df["Offender Age"],
+                    name="Offender Age",
+                    xbins=dict(start=10, end=90, size=5),
+                    marker_color='#E63946',
+                    opacity=0.6
+                ))
+                fig_age.update_layout(
+                    barmode='overlay',
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font_color='#94a3b8',
+                    xaxis=dict(title='Age (Years)', showgrid=True, gridcolor='#1e293b'),
+                    yaxis=dict(title='Count', showgrid=True, gridcolor='#1e293b'),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                    margin=dict(l=20, r=20, t=30, b=20),
+                    height=320
+                )
+                st.plotly_chart(fig_age, use_container_width=True)
+            else:
+                st.info("No age demographics available.")
+
+    with st.spinner("Fetching pre-computed GIS/ML model scores..."):
+        # Fetch actual deliverables generated by ML/GIS teams
+        df_cri = api_client.fetch_crime_risk_scores()
+        df_priority = api_client.fetch_patrol_priorities()
+        df_week = api_client.fetch_weekday_trends()
+
+    with tab_processed_models:
+        col_scores, col_week = st.columns([1, 1])
+        
+        with col_scores:
+            st.subheader("🏆 Crime Risk Index (CRI) Standings")
+            st.markdown("Pre-computed index rating districts based on severity levels and repeat offender ratios.")
+            if not df_cri.empty:
+                st.dataframe(
+                    df_cri[["district", "crime_count", "repeat_offenders", "CRI", "Risk_Level"]].rename(
+                        columns={"district": "District", "crime_count": "Incidents", "repeat_offenders": "Recidivists", "CRI": "CRI Score", "Risk_Level": "Risk Level"}
+                    ),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            else:
+                st.info("Crime Risk Index dataset not found under data/processed/.")
+
+            st.subheader("🛡️ District Patrol Rank & Patrol Priority")
+            st.markdown("Operational patrol priority recommendations mapped dynamically based on anomaly clusters.")
+            if not df_priority.empty:
+                st.dataframe(
+                    df_priority[["district", "patrol_rank", "recommendation"]].rename(
+                        columns={"district": "District", "patrol_rank": "Rank Priority", "recommendation": "Operational Order"}
+                    ),
+                    use_container_width=True,
+                    hide_index=True
+                )
+            else:
+                st.info("Patrol priority database not found under data/processed/.")
+                
+        with col_week:
+            st.subheader("📅 Temporal Patterns: Weekly Crime Load")
+            st.markdown("Weekly distribution of registered incidents computed during temporal profile runs.")
+            if not df_week.empty:
+                # Plot weekday trends bar chart
+                fig_week = px.bar(
+                    df_week,
+                    x="weekday",
+                    y="crime_count",
+                    labels={"weekday": "Day of Week", "crime_count": "Crime Incidents"},
+                    color="crime_count",
+                    color_continuous_scale="Reds"
+                )
+                fig_week.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font_color='#94a3b8',
+                    coloraxis_showscale=False,
+                    xaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    yaxis=dict(showgrid=True, gridcolor='#1e293b'),
+                    margin=dict(l=20, r=20, t=10, b=20),
+                    height=450
+                )
+                st.plotly_chart(fig_week, use_container_width=True)
+            else:
+                st.info("Weekday trends database not found under data/processed/.")
 
     # Recent incident logs bottom grid
     st.subheader("📰 Recent Incident Logs")
@@ -373,7 +436,7 @@ if page == "📊 Dashboard Overview":
 
 
 # ----------------------------------------------------
-# 6. Page 2: GIS Map Component
+# 6. Page 2: GIS Map Component (Pushed Files Activated)
 # ----------------------------------------------------
 elif page == "📍 GIS Mapping & Hotspots":
     render_header("GIS Mapping & Hotspots")
@@ -381,49 +444,38 @@ elif page == "📍 GIS Mapping & Hotspots":
     st.subheader("🗺️ Spatial Distribution & Cluster Mapping")
     st.markdown(
         "Interactive GIS tracking dashboard utilizing spatial coordinate feeds. "
-        "The primary GIS view displays Folium HTML layers compiled and delivered via our GIS team's APIs."
+        "Select and examine the actual Folium HTML layers compiled and delivered by the GIS team."
     )
     
-    # Selection Tabs
-    tab_folium, tab_heatmap = st.tabs(["🗺️ Interactive Folium GIS Map (API Layer)", "🔥 Density Heatmap (Local Plotly)"])
+    # Active selector dropdown for actual HTML files pushed to Git
+    map_layer = st.selectbox(
+        "Select Active GIS Map Layer",
+        [
+            "🚨 General Crime Incidents Map (crime_map.html)",
+            "🔥 Crime Hotspots Clusters Map (crime_hotspots.html)",
+            "🌡️ Crime Kernel Density Heatmap (crime_heatmap.html)",
+            "⚠️ Anomaly Detection Zones Map (crime_anomalies.html)"
+        ]
+    )
     
-    with tab_folium:
-        if not filtered_df.empty:
-            with st.spinner("Requesting Map Layer HTML from GIS Service..."):
-                # Fetch Folium map HTML string from API pipeline (Member 2)
-                folium_html_str = api_client.fetch_gis_map_layer(filtered_df)
-                
-            if folium_html_str:
-                # Embed HTML inside Streamlit page securely
-                st.components.v1.html(folium_html_str, height=550, scrolling=False)
-            else:
-                st.error("Failed to load map layer from GIS service pipeline.")
-        else:
-            st.warning("No incidents available to plot coordinates.")
-            
-    with tab_heatmap:
-        if not filtered_df.empty:
-            # Local fallback rendering
-            fig_heatmap = px.density_mapbox(
-                filtered_df,
-                lat="Latitude",
-                lon="Longitude",
-                z="Severity_Val",
-                radius=18,
-                zoom=6.8,
-                mapbox_style="carto-darkmatter",
-                color_continuous_scale="Viridis",
-                title="Crime Hotspots (Density Density Layout)"
-            )
-            fig_heatmap.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)',
-                font_color='#94a3b8',
-                margin=dict(l=0, r=0, t=30, b=0),
-                height=550
-            )
-            st.plotly_chart(fig_heatmap, use_container_width=True)
-        else:
-            st.warning("No coordinates matches standard queries.")
+    layer_key = {
+        "🚨 General Crime Incidents Map (crime_map.html)": "crime_map",
+        "🔥 Crime Hotspots Clusters Map (crime_hotspots.html)": "crime_hotspots",
+        "🌡️ Crime Kernel Density Heatmap (crime_heatmap.html)": "crime_heatmap",
+        "⚠️ Anomaly Detection Zones Map (crime_anomalies.html)": "crime_anomalies"
+    }[map_layer]
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    with st.spinner(f"Requesting '{layer_key}' HTML Layer..."):
+        # Fetch the selected Folium Map HTML string from API client
+        folium_html_str = api_client.fetch_gis_map_layer(layer_key)
+        
+    if folium_html_str and len(folium_html_str) > 100:
+        # Embed Folium HTML map frame
+        st.components.v1.html(folium_html_str, height=600, scrolling=True)
+    else:
+        st.error(f"Failed to load map layer '{layer_key}' from GIS pipeline. Verify the file exists under gis/outputs/maps/.")
 
     st.markdown("---")
     col1, col2, col3 = st.columns(3)
@@ -583,7 +635,7 @@ elif page == "🔮 ML Crime Predictions":
 
 
 # ----------------------------------------------------
-# 8. Page 8: Criminal Network Analysis Component
+# 8. Page 4: Criminal Network Analysis Component
 # ----------------------------------------------------
 elif page == "🕸️ Criminal Network Analysis":
     render_header("Criminal Network Analysis")
@@ -613,7 +665,6 @@ elif page == "🕸️ Criminal Network Analysis":
         edge_x = []
         edge_y = []
         for edge in edges:
-            # Find coordinates for source and target nodes
             source_node = next(n for n in nodes if n["id"] == edge["source"])
             target_node = next(n for n in nodes if n["id"] == edge["target"])
             edge_x.extend([source_node["x"], target_node["x"], None])

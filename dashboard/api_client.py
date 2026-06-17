@@ -30,34 +30,40 @@ class KSPAPIClient:
             pass # Fallback to local
             
         # --- Local Fallback ---
-        csv_path = "dashboard/crime_data.csv"
-        if os.path.exists(csv_path):
-            df = pd.read_csv(csv_path)
-            df["Date"] = pd.to_datetime(df["date"])
-            df["Incident ID"] = df["crime_id"]
-            df["District"] = df["district"]
-            df["Crime Category"] = df["crime_type"]
-            df["Latitude"] = df["latitude"]
-            df["Longitude"] = df["longitude"]
-            df["Status"] = df["status"]
-            df["Repeat Offender"] = df["repeat_offender"].astype(bool)
-            df["Victim Age"] = df["victim_age"]
-            df["Offender Age"] = df["offender_age"]
-            df["Police Station"] = df["police_station"]
-            
-            severity_map = {
-                "Vehicle Theft": "Low",
-                "Theft": "Low",
-                "Cybercrime": "Medium",
-                "Drug Offence": "Medium",
-                "Fraud": "Medium",
-                "Assault": "High",
-                "Burglary": "High",
-                "Robbery": "High"
-            }
-            df["Severity"] = df["Crime Category"].map(severity_map).fillna("Medium")
-            df["Severity_Val"] = df["Severity"].map({"Low": 6, "Medium": 12, "High": 22})
-            return df
+        # Prioritize the full 10,000 synthetic dataset merged from GitHub, then 520 subset
+        paths = [
+            "data/raw/ksp_synthetic_crime_dataset.csv",
+            "dashboard/crime_data.csv"
+        ]
+        
+        for csv_path in paths:
+            if os.path.exists(csv_path):
+                df = pd.read_csv(csv_path)
+                df["Date"] = pd.to_datetime(df["date"])
+                df["Incident ID"] = df["crime_id"]
+                df["District"] = df["district"]
+                df["Crime Category"] = df["crime_type"]
+                df["Latitude"] = df["latitude"]
+                df["Longitude"] = df["longitude"]
+                df["Status"] = df["status"]
+                df["Repeat Offender"] = df["repeat_offender"].astype(bool)
+                df["Victim Age"] = df["victim_age"]
+                df["Offender Age"] = df["offender_age"]
+                df["Police Station"] = df["police_station"]
+                
+                severity_map = {
+                    "Vehicle Theft": "Low",
+                    "Theft": "Low",
+                    "Cybercrime": "Medium",
+                    "Drug Offence": "Medium",
+                    "Fraud": "Medium",
+                    "Assault": "High",
+                    "Burglary": "High",
+                    "Robbery": "High"
+                }
+                df["Severity"] = df["Crime Category"].map(severity_map).fillna("Medium")
+                df["Severity_Val"] = df["Severity"].map({"Low": 6, "Medium": 12, "High": 22})
+                return df
         return pd.DataFrame()
 
     def fetch_suspects(self) -> dict:
@@ -157,8 +163,6 @@ class KSPAPIClient:
         API pipeline: Member 3 (AI/ML Intelligence)
         Endpoint: GET /api/ml/forecast
         """
-        # In a real setup, we would send the historic data to get the prediction.
-        # Here we mock the API endpoint call.
         url = f"{self.base_url}/api/ml/forecast"
         try:
             response = requests.get(url, timeout=2.0)
@@ -196,12 +200,12 @@ class KSPAPIClient:
             })
         return pd.DataFrame()
 
-    def fetch_gis_map_layer(self, filtered_data: pd.DataFrame) -> str:
+    def fetch_gis_map_layer(self, layer_name="crime_map") -> str:
         """
         API pipeline: Member 2 (GIS & Crime Intelligence)
-        Endpoint: GET /api/gis/folium-map
+        Endpoint: GET /api/gis/folium-map?layer=...
         """
-        url = f"{self.base_url}/api/gis/folium-map"
+        url = f"{self.base_url}/api/gis/folium-map?layer={layer_name}"
         try:
             response = requests.get(url, timeout=2.0)
             if response.status_code == 200:
@@ -210,43 +214,22 @@ class KSPAPIClient:
             pass # Fallback to local
             
         # --- Local Fallback ---
-        # Generate raw HTML representing a Leaflet map as the Folium layer HTML string.
-        # This keeps the dashboard clean and visually complete even when the GIS server is offline.
-        # Let's generate a beautiful customized Leaflet CSS/JS map showing current query coordinates.
-        coordinates_js = ""
-        for idx, row in filtered_data.head(50).iterrows():
-            coordinates_js += f"L.marker([{row['Latitude']}, {row['Longitude']}]).addTo(map).bindPopup('<b>ID:</b> {row['Incident ID']}<br><b>Cat:</b> {row['Crime Category']}<br><b>Dist:</b> {row['District']}');\n"
+        # Dynamically read the actual maps pushed by the GIS team on GitHub
+        map_files = {
+            "crime_map": "gis/outputs/maps/crime_map.html",
+            "crime_heatmap": "gis/outputs/maps/crime_heatmap.html",
+            "crime_hotspots": "gis/outputs/maps/crime_hotspots.html",
+            "crime_anomalies": "gis/outputs/maps/crime_anomalies.html"
+        }
         
-        map_center_lat = filtered_data["Latitude"].mean() if not filtered_data.empty else 12.9716
-        map_center_lon = filtered_data["Longitude"].mean() if not filtered_data.empty else 77.5946
-        
-        folium_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
-            <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-            <style>
-                html, body {{width: 100%; height: 100%; margin: 0; padding: 0; background-color: #0f172a;}}
-                #map_canvas {{width: 100%; height: 100%;}}
-            </style>
-        </head>
-        <body>
-            <div id="map_canvas"></div>
-            <script>
-                var map = L.map('map_canvas').setView([{map_center_lat}, {map_center_lon}], 7);
-                L.tileLayer('https://{{s}}.basemaps.cartocdn.com/dark_all/{{z}}/{{x}}/{{y}}{{r}}.png', {{
-                    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-                    subdomains: 'abcd',
-                    maxZoom: 20
-                }}).addTo(map);
-                {coordinates_js}
-            </script>
-        </body>
-        </html>
-        """
-        return folium_html
+        file_path = map_files.get(layer_name, "gis/outputs/maps/crime_map.html")
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception:
+                pass
+        return ""
 
     def fetch_network_graph(self) -> dict:
         """
@@ -287,3 +270,52 @@ class KSPAPIClient:
                 {"source": "Shabir Ahmed (Logistics)", "target": "Chethan S. (Enforcer)"}
             ]
         }
+
+    # --- New Methods to fetch processed GIS/ML metrics ---
+    def fetch_crime_risk_scores(self) -> pd.DataFrame:
+        """Fetch pre-computed crime risk score analytics from database."""
+        url = f"{self.base_url}/api/ml/risk-scores"
+        try:
+            response = requests.get(url, timeout=2.0)
+            if response.status_code == 200:
+                return pd.DataFrame(response.json())
+        except Exception:
+            pass
+            
+        # Fallback to local processed file
+        file_path = "data/processed/crime_risk_scores.csv"
+        if os.path.exists(file_path):
+            return pd.read_csv(file_path)
+        return pd.DataFrame()
+
+    def fetch_patrol_priorities(self) -> pd.DataFrame:
+        """Fetch pre-computed patrol recommendations from database."""
+        url = f"{self.base_url}/api/ml/patrol-priorities"
+        try:
+            response = requests.get(url, timeout=2.0)
+            if response.status_code == 200:
+                return pd.DataFrame(response.json())
+        except Exception:
+            pass
+            
+        # Fallback to local processed file
+        file_path = "data/processed/district_patrol_priority.csv"
+        if os.path.exists(file_path):
+            return pd.read_csv(file_path)
+        return pd.DataFrame()
+
+    def fetch_weekday_trends(self) -> pd.DataFrame:
+        """Fetch weekday temporal trends from database."""
+        url = f"{self.base_url}/api/ml/weekday-trends"
+        try:
+            response = requests.get(url, timeout=2.0)
+            if response.status_code == 200:
+                return pd.DataFrame(response.json())
+        except Exception:
+            pass
+            
+        # Fallback to local processed file
+        file_path = "data/processed/weekday_crime_trends.csv"
+        if os.path.exists(file_path):
+            return pd.read_csv(file_path)
+        return pd.DataFrame()
