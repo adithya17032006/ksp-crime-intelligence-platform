@@ -1,5 +1,4 @@
 import pandas as pd
-
 from connection import engine
 
 print("Loading datasets into database...")
@@ -60,8 +59,6 @@ patrol_df.to_sql(
 
 print("✓ Patrol Priority Loaded")
 
-print("\nAll datasets loaded successfully!")
-
 # Monthly Trends
 monthly_df = pd.read_csv(
     "../../data/processed/monthly_crime_trends.csv"
@@ -89,3 +86,19 @@ weekday_df.to_sql(
 )
 
 print("✓ Weekday Trends Loaded")
+
+# Hotspot Centroids
+centroid_df = pd.read_csv(
+    "../../data/processed/hotspot_centroids.csv"
+)
+
+centroid_df.to_sql(
+    "hotspot_centroids",
+    engine,
+    if_exists="replace",
+    index=False
+)
+
+print("✓ Hotspot Centroids Loaded")
+
+print("\nAll datasets loaded successfully!")
