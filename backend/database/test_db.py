@@ -1,39 +1,21 @@
 import pandas as pd
-
 from connection import engine
 
-print("\nDISTRICT RISK SCORES\n")
+tables = [
+    "district_risk_scores",
+    "crime_hotspots",
+    "district_anomalies",
+    "patrol_priority",
+    "monthly_crime_trends",
+    "weekday_crime_trends"
+]
 
-risk_df = pd.read_sql(
-    "SELECT * FROM district_risk_scores",
-    engine
-)
+for table in tables:
+    print(f"\n===== {table} =====")
 
-print(risk_df.head())
+    df = pd.read_sql(
+        f"SELECT * FROM {table}",
+        engine
+    )
 
-print("\nHOTSPOTS\n")
-
-hotspot_df = pd.read_sql(
-    "SELECT * FROM crime_hotspots",
-    engine
-)
-
-print(hotspot_df.head())
-
-print("\nANOMALIES\n")
-
-anomaly_df = pd.read_sql(
-    "SELECT * FROM district_anomalies",
-    engine
-)
-
-print(anomaly_df.head())
-
-print("\nPATROL PRIORITY\n")
-
-patrol_df = pd.read_sql(
-    "SELECT * FROM patrol_priority",
-    engine
-)
-
-print(patrol_df.head())
+    print(df.head())

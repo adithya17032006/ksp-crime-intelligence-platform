@@ -61,3 +61,31 @@ patrol_df.to_sql(
 print("✓ Patrol Priority Loaded")
 
 print("\nAll datasets loaded successfully!")
+
+# Monthly Trends
+monthly_df = pd.read_csv(
+    "../../data/processed/monthly_crime_trends.csv"
+)
+
+monthly_df.to_sql(
+    "monthly_crime_trends",
+    engine,
+    if_exists="replace",
+    index=False
+)
+
+print("✓ Monthly Trends Loaded")
+
+# Weekday Trends
+weekday_df = pd.read_csv(
+    "../../data/processed/weekday_crime_trends.csv"
+)
+
+weekday_df.to_sql(
+    "weekday_crime_trends",
+    engine,
+    if_exists="replace",
+    index=False
+)
+
+print("✓ Weekday Trends Loaded")

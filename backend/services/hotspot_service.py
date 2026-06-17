@@ -1,11 +1,11 @@
 import pandas as pd
+from database.connection import engine
 
 def get_hotspot_data():
 
-    df = pd.read_csv(
-        "../data/processed/crime_hotspots.csv"
+    df = pd.read_sql(
+        "SELECT * FROM crime_hotspots",
+        engine
     )
 
-    return df.to_dict(
-        orient="records"
-    )
+    return df.to_dict(orient="records")
