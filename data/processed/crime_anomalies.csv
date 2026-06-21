@@ -1,0 +1,201 @@
+crime_id,district,police_station,crime_type,date,latitude,longitude,victim_age,offender_age,status,repeat_offender,anomaly
+CR000006,Kalaburagi,Kalaburagi PS 4,Vehicle Theft,2025-02-14,17.370827,76.773258,19,23,Under Investigation,0,-1
+CR000020,Belagavi,Belagavi PS 2,Vehicle Theft,2024-11-14,15.947952,74.400704,72,21,Closed,0,-1
+CR000024,Kalaburagi,Kalaburagi PS 2,Cybercrime,2023-09-20,17.381893,76.860622,74,19,Open,0,-1
+CR000345,Bengaluru Urban,Bengaluru PS 1,Robbery,2024-07-17,13.033759,77.549659,74,64,Closed,0,-1
+CR000602,Kalaburagi,Kalaburagi PS 2,Burglary,2025-02-13,17.289049,76.875464,18,21,Under Investigation,0,-1
+CR000624,Bengaluru Urban,Bengaluru PS 2,Cybercrime,2023-09-30,12.941466,77.507101,73,20,Closed,0,-1
+CR000672,Bengaluru Urban,Bengaluru PS 5,Cybercrime,2025-03-14,12.852254,77.569806,23,18,Closed,0,-1
+CR000723,Belagavi,Belagavi PS 4,Theft,2024-03-14,15.840804,74.452059,18,22,Charge Sheet Filed,0,-1
+CR000734,Belagavi,Belagavi PS 2,Theft,2023-09-10,15.836995,74.464555,20,63,Charge Sheet Filed,0,-1
+CR000744,Bengaluru Urban,Bengaluru PS 3,Burglary,2025-01-23,12.975077,77.689682,65,18,Open,0,-1
+CR000755,Kalaburagi,Kalaburagi PS 4,Assault,2024-06-23,17.354204,76.861683,73,63,Under Investigation,1,-1
+CR000781,Bengaluru Urban,Bengaluru PS 3,Robbery,2023-08-14,12.980827,77.643828,19,19,Closed,0,-1
+CR000793,Bengaluru Urban,Bengaluru PS 4,Robbery,2023-04-14,12.973662,77.665112,18,60,Charge Sheet Filed,0,-1
+CR000839,Kalaburagi,Kalaburagi PS 5,Theft,2025-02-16,17.408773,76.818817,20,60,Closed,0,-1
+CR000882,Kalaburagi,Kalaburagi PS 4,Burglary,2024-07-11,17.423069,76.884749,74,61,Closed,0,-1
+CR000945,Kalaburagi,Kalaburagi PS 5,Drug Offence,2025-01-06,17.338473,76.844881,73,20,Open,1,-1
+CR001000,Dharwad,Dharwad PS 1,Robbery,2024-01-31,15.401689,74.951172,20,18,Under Investigation,1,-1
+CR001017,Bengaluru Urban,Bengaluru PS 5,Robbery,2024-08-29,13.020268,77.625795,18,23,Charge Sheet Filed,0,-1
+CR001062,Kalaburagi,Kalaburagi PS 5,Vehicle Theft,2024-06-13,17.210778,76.843933,18,21,Closed,1,-1
+CR001210,Dharwad,Dharwad PS 1,Cybercrime,2023-09-28,15.415501,74.99712,19,18,Closed,0,-1
+CR001224,Belagavi,Belagavi PS 5,Cybercrime,2025-03-04,15.762232,74.409358,19,64,Charge Sheet Filed,0,-1
+CR001245,Belagavi,Belagavi PS 5,Assault,2024-03-10,15.979641,74.411497,33,18,Charge Sheet Filed,0,-1
+CR001397,Bengaluru Urban,Bengaluru PS 1,Theft,2023-07-17,12.966745,77.688359,18,56,Closed,0,-1
+CR001453,Kalaburagi,Kalaburagi PS 2,Drug Offence,2024-10-07,17.417257,76.80543,69,62,Open,0,-1
+CR001458,Mangaluru,Mangaluru PS 1,Burglary,2025-02-01,12.898649,74.85044,19,19,Under Investigation,0,-1
+CR001485,Vijayapura,Vijayapura PS 5,Assault,2023-11-19,16.842442,75.77376,18,23,Closed,0,-1
+CR001497,Mysuru,Mysuru PS 2,Robbery,2025-05-11,12.305465,76.595816,18,63,Under Investigation,0,-1
+CR001628,Kalaburagi,Kalaburagi PS 4,Fraud,2024-09-15,17.28789,76.821009,67,18,Charge Sheet Filed,0,-1
+CR001638,Belagavi,Belagavi PS 5,Robbery,2024-09-14,15.919508,74.539865,71,18,Open,0,-1
+CR001645,Mangaluru,Mangaluru PS 3,Assault,2023-03-23,12.886789,74.82998,18,27,Open,0,-1
+CR001653,Mangaluru,Mangaluru PS 1,Robbery,2025-01-01,12.928247,74.872553,73,19,Open,0,-1
+CR001680,Dharwad,Dharwad PS 5,Vehicle Theft,2023-05-04,15.391725,74.999139,21,18,Under Investigation,0,-1
+CR001752,Mangaluru,Mangaluru PS 5,Theft,2025-01-27,12.902029,74.903151,70,18,Closed,0,-1
+CR001756,Mysuru,Mysuru PS 5,Drug Offence,2024-02-17,12.273677,76.730458,20,19,Open,0,-1
+CR001803,Belagavi,Belagavi PS 2,Theft,2025-01-05,15.885317,74.526757,22,20,Open,0,-1
+CR001900,Mysuru,Mysuru PS 4,Cybercrime,2024-02-04,12.238569,76.676455,18,18,Under Investigation,0,-1
+CR001983,Belagavi,Belagavi PS 1,Robbery,2024-03-16,15.906921,74.503747,24,64,Charge Sheet Filed,0,-1
+CR002078,Kalaburagi,Kalaburagi PS 2,Drug Offence,2024-01-25,17.306569,76.857059,20,64,Under Investigation,1,-1
+CR002098,Vijayapura,Vijayapura PS 3,Vehicle Theft,2025-03-14,16.807601,75.728268,21,64,Closed,0,-1
+CR002099,Kalaburagi,Kalaburagi PS 4,Vehicle Theft,2024-10-23,17.280315,76.633344,74,61,Charge Sheet Filed,0,-1
+CR002205,Belagavi,Belagavi PS 4,Cybercrime,2025-04-13,15.866286,74.53163,70,64,Closed,1,-1
+CR002226,Belagavi,Belagavi PS 5,Cybercrime,2025-05-29,15.810711,74.430927,19,61,Open,0,-1
+CR002247,Mangaluru,Mangaluru PS 4,Fraud,2023-02-18,12.908532,74.845492,22,64,Charge Sheet Filed,0,-1
+CR002302,Kalaburagi,Kalaburagi PS 1,Assault,2024-01-22,17.280421,76.887625,18,29,Open,0,-1
+CR002342,Kalaburagi,Kalaburagi PS 3,Theft,2023-01-10,17.167183,76.939904,20,18,Open,0,-1
+CR002356,Belagavi,Belagavi PS 3,Fraud,2024-07-23,15.884547,74.376761,28,18,Charge Sheet Filed,0,-1
+CR002421,Belagavi,Belagavi PS 5,Fraud,2023-10-18,15.925085,74.477266,22,61,Closed,0,-1
+CR002508,Ballari,Ballari PS 5,Fraud,2024-07-18,15.174341,76.846333,18,20,Closed,0,-1
+CR002584,Tumakuru,Tumakuru PS 5,Drug Offence,2023-11-12,13.398032,77.18246,74,19,Closed,1,-1
+CR002627,Tumakuru,Tumakuru PS 2,Drug Offence,2024-05-26,13.304156,77.058848,18,64,Closed,1,-1
+CR002640,Dharwad,Dharwad PS 4,Burglary,2025-03-11,15.397219,75.04872,19,18,Open,1,-1
+CR002652,Mangaluru,Mangaluru PS 3,Theft,2023-06-24,12.928841,74.810027,72,19,Open,0,-1
+CR002693,Mangaluru,Mangaluru PS 2,Theft,2024-03-01,12.927085,74.763134,20,61,Closed,1,-1
+CR002698,Kalaburagi,Kalaburagi PS 5,Fraud,2024-02-25,17.315074,76.86785,18,63,Under Investigation,0,-1
+CR002743,Kalaburagi,Kalaburagi PS 4,Drug Offence,2023-06-27,17.322234,76.705994,39,18,Under Investigation,0,-1
+CR002746,Bengaluru Urban,Bengaluru PS 3,Assault,2024-06-25,12.946805,77.596665,19,23,Charge Sheet Filed,0,-1
+CR002770,Belagavi,Belagavi PS 4,Theft,2023-06-04,15.933193,74.502277,72,62,Open,0,-1
+CR002777,Bengaluru Urban,Bengaluru PS 5,Drug Offence,2025-06-14,13.012929,77.66334,72,19,Open,0,-1
+CR002829,Mysuru,Mysuru PS 4,Theft,2025-01-01,12.383595,76.668038,70,18,Open,1,-1
+CR002848,Mangaluru,Mangaluru PS 2,Vehicle Theft,2024-09-14,12.990534,74.8355,18,59,Charge Sheet Filed,1,-1
+CR002934,Vijayapura,Vijayapura PS 2,Cybercrime,2024-12-15,16.812685,75.743014,71,18,Charge Sheet Filed,0,-1
+CR002945,Mangaluru,Mangaluru PS 4,Fraud,2024-11-12,12.819799,74.949073,74,20,Under Investigation,0,-1
+CR002954,Kalaburagi,Kalaburagi PS 5,Theft,2024-10-04,17.329066,76.844683,64,18,Charge Sheet Filed,0,-1
+CR003030,Vijayapura,Vijayapura PS 1,Drug Offence,2024-03-26,16.859796,75.709042,19,19,Under Investigation,0,-1
+CR003075,Mangaluru,Mangaluru PS 5,Robbery,2025-01-24,12.857291,74.846233,25,64,Charge Sheet Filed,0,-1
+CR003133,Vijayapura,Vijayapura PS 1,Cybercrime,2024-09-09,16.828632,75.66119,19,19,Open,0,-1
+CR003266,Mangaluru,Mangaluru PS 1,Cybercrime,2023-02-21,12.874906,74.853166,18,20,Charge Sheet Filed,0,-1
+CR003339,Belagavi,Belagavi PS 5,Drug Offence,2025-05-21,15.941794,74.478162,63,63,Open,0,-1
+CR003352,Kalaburagi,Kalaburagi PS 3,Robbery,2023-02-04,17.309597,76.911951,19,64,Charge Sheet Filed,0,-1
+CR003376,Mysuru,Mysuru PS 3,Assault,2024-05-10,12.282086,76.651589,69,18,Closed,0,-1
+CR003442,Vijayapura,Vijayapura PS 3,Cybercrime,2024-06-26,16.780347,75.616074,19,61,Charge Sheet Filed,0,-1
+CR003456,Mangaluru,Mangaluru PS 5,Cybercrime,2025-02-21,12.960767,74.838352,73,64,Under Investigation,0,-1
+CR003461,Kalaburagi,Kalaburagi PS 5,Cybercrime,2023-10-10,17.368359,76.934298,69,18,Closed,1,-1
+CR003470,Mangaluru,Mangaluru PS 1,Robbery,2024-05-17,12.835928,74.788407,73,19,Open,1,-1
+CR003494,Belagavi,Belagavi PS 1,Assault,2024-06-01,15.961659,74.491001,74,60,Charge Sheet Filed,1,-1
+CR003620,Belagavi,Belagavi PS 2,Theft,2025-06-17,15.821068,74.481525,66,64,Charge Sheet Filed,0,-1
+CR003710,Belagavi,Belagavi PS 3,Assault,2023-07-22,15.910292,74.514631,71,64,Under Investigation,0,-1
+CR003722,Kalaburagi,Kalaburagi PS 5,Assault,2024-11-17,17.300124,76.879677,74,21,Closed,0,-1
+CR003732,Mangaluru,Mangaluru PS 2,Theft,2024-06-17,12.921889,74.770003,24,63,Charge Sheet Filed,0,-1
+CR003772,Dharwad,Dharwad PS 1,Vehicle Theft,2024-06-13,15.39718,74.929128,74,64,Open,1,-1
+CR003783,Kalaburagi,Kalaburagi PS 2,Assault,2025-03-01,17.34444,76.87709,24,64,Under Investigation,0,-1
+CR003790,Bengaluru Urban,Bengaluru PS 3,Robbery,2023-04-18,13.084918,77.621752,73,22,Open,0,-1
+CR003802,Kalaburagi,Kalaburagi PS 3,Drug Offence,2024-04-12,17.293976,76.754354,47,18,Under Investigation,0,-1
+CR003892,Mysuru,Mysuru PS 1,Robbery,2024-10-17,12.287024,76.534554,23,22,Open,0,-1
+CR003898,Mangaluru,Mangaluru PS 1,Robbery,2024-04-19,12.885308,74.837909,18,22,Closed,0,-1
+CR004073,Bengaluru Urban,Bengaluru PS 4,Fraud,2024-07-24,12.950354,77.689179,41,18,Charge Sheet Filed,0,-1
+CR004113,Ballari,Ballari PS 2,Vehicle Theft,2023-11-01,15.085236,76.905603,19,18,Under Investigation,1,-1
+CR004115,Mysuru,Mysuru PS 3,Robbery,2024-08-03,12.344926,76.62556,18,20,Charge Sheet Filed,0,-1
+CR004150,Bengaluru Urban,Bengaluru PS 2,Assault,2023-07-24,12.990027,77.555031,69,19,Under Investigation,0,-1
+CR004167,Mysuru,Mysuru PS 1,Theft,2023-03-31,12.225437,76.611485,23,21,Under Investigation,0,-1
+CR004185,Belagavi,Belagavi PS 4,Theft,2024-06-20,15.903731,74.536637,62,18,Under Investigation,0,-1
+CR004194,Mangaluru,Mangaluru PS 2,Fraud,2023-08-27,12.962429,74.782214,20,18,Open,0,-1
+CR004280,Kalaburagi,Kalaburagi PS 3,Robbery,2023-07-19,17.22179,76.878535,69,20,Charge Sheet Filed,0,-1
+CR004294,Bengaluru Urban,Bengaluru PS 1,Assault,2025-01-27,12.956298,77.67393,67,18,Charge Sheet Filed,0,-1
+CR004388,Belagavi,Belagavi PS 3,Drug Offence,2024-05-02,15.88701,74.397046,48,18,Closed,0,-1
+CR004395,Belagavi,Belagavi PS 5,Assault,2024-11-17,15.842864,74.492386,18,21,Open,0,-1
+CR004498,Belagavi,Belagavi PS 1,Assault,2024-08-31,15.894674,74.467863,66,64,Charge Sheet Filed,0,-1
+CR004521,Kalaburagi,Kalaburagi PS 1,Drug Offence,2023-03-03,17.350615,76.758907,19,34,Open,0,-1
+CR004567,Kalaburagi,Kalaburagi PS 1,Theft,2024-02-21,17.269842,76.799575,22,18,Closed,0,-1
+CR004671,Kalaburagi,Kalaburagi PS 3,Vehicle Theft,2024-03-25,17.34367,76.740165,74,26,Closed,0,-1
+CR004688,Kalaburagi,Kalaburagi PS 1,Cybercrime,2023-11-15,17.308423,76.882681,65,18,Under Investigation,1,-1
+CR004689,Kalaburagi,Kalaburagi PS 2,Vehicle Theft,2023-03-27,17.287085,76.73547,24,20,Closed,0,-1
+CR004758,Belagavi,Belagavi PS 4,Vehicle Theft,2023-12-31,15.800267,74.41194,28,19,Charge Sheet Filed,0,-1
+CR004764,Kalaburagi,Kalaburagi PS 1,Theft,2024-03-16,17.425296,76.877003,19,35,Charge Sheet Filed,0,-1
+CR004776,Belagavi,Belagavi PS 2,Fraud,2025-02-07,15.896935,74.568003,19,64,Open,0,-1
+CR004791,Kalaburagi,Kalaburagi PS 3,Vehicle Theft,2023-05-06,17.367152,76.898981,24,21,Open,0,-1
+CR004801,Kalaburagi,Kalaburagi PS 3,Cybercrime,2023-01-24,17.369619,76.894364,74,63,Charge Sheet Filed,0,-1
+CR004810,Bengaluru Urban,Bengaluru PS 3,Vehicle Theft,2023-08-31,12.821477,77.553286,20,18,Charge Sheet Filed,0,-1
+CR005041,Kalaburagi,Kalaburagi PS 2,Assault,2025-04-14,17.366958,76.864198,22,64,Charge Sheet Filed,0,-1
+CR005148,Mysuru,Mysuru PS 5,Drug Offence,2024-06-08,12.196968,76.62631,32,18,Closed,0,-1
+CR005179,Bengaluru Urban,Bengaluru PS 5,Robbery,2024-07-10,13.036105,77.659567,74,23,Under Investigation,0,-1
+CR005217,Vijayapura,Vijayapura PS 1,Burglary,2023-03-20,16.8195,75.644166,18,21,Open,0,-1
+CR005252,Bengaluru Urban,Bengaluru PS 2,Robbery,2025-04-10,12.971007,77.625948,18,62,Under Investigation,0,-1
+CR005343,Mangaluru,Mangaluru PS 4,Fraud,2025-01-19,12.990338,74.83468,19,63,Charge Sheet Filed,0,-1
+CR005377,Kalaburagi,Kalaburagi PS 4,Drug Offence,2023-02-14,17.314989,76.873381,20,19,Charge Sheet Filed,0,-1
+CR005444,Belagavi,Belagavi PS 3,Burglary,2024-01-19,15.83597,74.395284,23,60,Charge Sheet Filed,0,-1
+CR005468,Belagavi,Belagavi PS 1,Cybercrime,2024-05-10,15.798437,74.488875,21,21,Closed,1,-1
+CR005515,Kalaburagi,Kalaburagi PS 1,Theft,2023-09-08,17.278467,76.715295,25,20,Open,0,-1
+CR005527,Bengaluru Urban,Bengaluru PS 3,Theft,2023-07-07,12.991623,77.603994,18,63,Charge Sheet Filed,0,-1
+CR005562,Mysuru,Mysuru PS 2,Robbery,2023-04-07,12.274477,76.574392,40,18,Charge Sheet Filed,0,-1
+CR005576,Vijayapura,Vijayapura PS 1,Fraud,2024-04-09,16.867394,75.761841,20,19,Open,1,-1
+CR005589,Dharwad,Dharwad PS 3,Vehicle Theft,2023-12-05,15.455747,74.889773,73,18,Open,0,-1
+CR005677,Belagavi,Belagavi PS 2,Theft,2024-05-25,15.848698,74.472357,66,18,Under Investigation,0,-1
+CR005700,Mangaluru,Mangaluru PS 2,Theft,2024-02-08,12.919927,74.905644,73,19,Open,0,-1
+CR005728,Mangaluru,Mangaluru PS 4,Theft,2024-05-03,13.01936,74.990817,18,63,Under Investigation,0,-1
+CR005856,Kalaburagi,Kalaburagi PS 5,Vehicle Theft,2025-01-15,17.311297,76.890075,23,21,Under Investigation,0,-1
+CR005863,Belagavi,Belagavi PS 4,Robbery,2023-03-10,15.842004,74.384446,29,18,Under Investigation,0,-1
+CR006083,Kalaburagi,Kalaburagi PS 4,Assault,2024-02-13,17.363124,76.875118,68,63,Charge Sheet Filed,0,-1
+CR006149,Mysuru,Mysuru PS 3,Fraud,2023-06-13,12.25719,76.564832,18,34,Charge Sheet Filed,0,-1
+CR006231,Belagavi,Belagavi PS 2,Fraud,2023-04-11,15.891346,74.487705,61,18,Closed,0,-1
+CR006244,Belagavi,Belagavi PS 2,Fraud,2024-07-23,15.869526,74.40801,67,63,Under Investigation,0,-1
+CR006388,Belagavi,Belagavi PS 5,Vehicle Theft,2023-06-07,15.815345,74.459623,18,60,Open,1,-1
+CR006505,Shivamogga,Shivamogga PS 3,Robbery,2023-07-01,13.89315,75.711033,19,21,Charge Sheet Filed,1,-1
+CR006532,Kalaburagi,Kalaburagi PS 1,Vehicle Theft,2023-08-05,17.344208,76.877929,72,63,Charge Sheet Filed,1,-1
+CR006567,Shivamogga,Shivamogga PS 2,Cybercrime,2025-06-14,13.851423,75.56951,20,18,Closed,1,-1
+CR006589,Kalaburagi,Kalaburagi PS 1,Cybercrime,2024-05-03,17.342707,76.87029,19,59,Under Investigation,0,-1
+CR006600,Kalaburagi,Kalaburagi PS 2,Robbery,2023-05-23,17.354259,76.756958,19,30,Charge Sheet Filed,0,-1
+CR006627,Belagavi,Belagavi PS 2,Fraud,2024-07-23,15.928882,74.475374,74,63,Charge Sheet Filed,0,-1
+CR006683,Belagavi,Belagavi PS 1,Theft,2023-02-19,15.779951,74.436657,27,19,Closed,1,-1
+CR006695,Belagavi,Belagavi PS 5,Fraud,2025-04-17,15.847786,74.389782,66,61,Closed,0,-1
+CR006752,Shivamogga,Shivamogga PS 5,Drug Offence,2023-11-25,13.930737,75.650694,18,64,Open,0,-1
+CR006836,Kalaburagi,Kalaburagi PS 5,Vehicle Theft,2023-09-23,17.313455,76.80905,69,18,Under Investigation,1,-1
+CR006942,Mangaluru,Mangaluru PS 2,Vehicle Theft,2023-08-20,13.01714,74.842334,18,19,Charge Sheet Filed,1,-1
+CR006954,Kalaburagi,Kalaburagi PS 5,Vehicle Theft,2023-06-18,17.380148,76.896516,20,26,Charge Sheet Filed,0,-1
+CR007051,Belagavi,Belagavi PS 2,Robbery,2023-07-14,15.834006,74.480316,74,64,Under Investigation,0,-1
+CR007115,Belagavi,Belagavi PS 5,Drug Offence,2023-12-15,15.961798,74.370848,58,63,Charge Sheet Filed,1,-1
+CR007123,Kalaburagi,Kalaburagi PS 2,Robbery,2023-01-08,17.417319,76.889133,72,20,Open,0,-1
+CR007125,Mysuru,Mysuru PS 3,Drug Offence,2025-04-23,12.355697,76.624441,19,23,Open,0,-1
+CR007132,Belagavi,Belagavi PS 1,Fraud,2023-05-08,15.860034,74.543921,74,19,Open,0,-1
+CR007182,Vijayapura,Vijayapura PS 5,Drug Offence,2025-03-07,16.87419,75.792432,21,22,Closed,0,-1
+CR007251,Kalaburagi,Kalaburagi PS 4,Theft,2025-03-29,17.369329,76.86954,63,18,Under Investigation,0,-1
+CR007499,Mangaluru,Mangaluru PS 3,Fraud,2023-07-20,12.877583,74.867547,20,62,Under Investigation,0,-1
+CR007509,Kalaburagi,Kalaburagi PS 4,Fraud,2024-08-22,17.345069,76.732134,30,18,Closed,0,-1
+CR007714,Vijayapura,Vijayapura PS 3,Drug Offence,2023-08-24,16.840556,75.663308,26,18,Under Investigation,1,-1
+CR007731,Belagavi,Belagavi PS 2,Drug Offence,2024-02-18,15.838965,74.40653,19,22,Under Investigation,0,-1
+CR007750,Bengaluru Urban,Bengaluru PS 5,Assault,2024-10-14,12.952015,77.6023,69,19,Open,0,-1
+CR007751,Vijayapura,Vijayapura PS 4,Robbery,2024-01-30,16.725875,75.699095,21,20,Charge Sheet Filed,1,-1
+CR007776,Mangaluru,Mangaluru PS 4,Burglary,2025-04-26,12.836615,74.906555,18,23,Open,0,-1
+CR007800,Belagavi,Belagavi PS 3,Cybercrime,2023-06-16,15.817385,74.420768,62,63,Under Investigation,1,-1
+CR007880,Vijayapura,Vijayapura PS 2,Vehicle Theft,2025-01-07,16.700261,75.702252,21,64,Closed,1,-1
+CR007917,Belagavi,Belagavi PS 2,Burglary,2024-05-23,15.860673,74.469157,74,20,Charge Sheet Filed,0,-1
+CR008035,Bengaluru Urban,Bengaluru PS 3,Drug Offence,2023-04-28,12.913108,77.583193,19,64,Closed,0,-1
+CR008091,Bengaluru Urban,Bengaluru PS 2,Robbery,2025-05-29,12.974608,77.671932,18,63,Under Investigation,0,-1
+CR008098,Mysuru,Mysuru PS 2,Fraud,2023-12-19,12.249126,76.553176,49,18,Closed,0,-1
+CR008119,Kalaburagi,Kalaburagi PS 5,Cybercrime,2023-06-29,17.30555,76.798182,29,18,Under Investigation,0,-1
+CR008146,Mysuru,Mysuru PS 1,Robbery,2025-02-14,12.232347,76.641033,72,19,Under Investigation,1,-1
+CR008281,Bengaluru Urban,Bengaluru PS 4,Vehicle Theft,2025-05-02,12.878447,77.632739,19,60,Open,0,-1
+CR008441,Mysuru,Mysuru PS 5,Assault,2023-09-07,12.365896,76.629029,18,20,Closed,0,-1
+CR008542,Belagavi,Belagavi PS 2,Drug Offence,2023-08-22,15.888083,74.442297,70,64,Charge Sheet Filed,1,-1
+CR008640,Mangaluru,Mangaluru PS 5,Vehicle Theft,2025-04-01,12.948158,74.844298,71,18,Closed,1,-1
+CR008722,Bengaluru Urban,Bengaluru PS 5,Theft,2023-10-19,13.017498,77.673094,19,60,Closed,0,-1
+CR008860,Mysuru,Mysuru PS 5,Drug Offence,2023-08-25,12.377099,76.663146,20,20,Under Investigation,0,-1
+CR008960,Belagavi,Belagavi PS 3,Theft,2025-03-15,15.851376,74.510798,73,63,Open,0,-1
+CR008972,Belagavi,Belagavi PS 2,Theft,2024-12-02,15.969201,74.479267,18,58,Closed,0,-1
+CR009001,Kalaburagi,Kalaburagi PS 1,Theft,2024-04-04,17.43268,76.888482,18,51,Open,0,-1
+CR009023,Bengaluru Urban,Bengaluru PS 5,Assault,2024-02-15,12.876427,77.565147,18,62,Under Investigation,0,-1
+CR009048,Vijayapura,Vijayapura PS 2,Drug Offence,2023-12-21,16.855786,75.737213,18,22,Closed,0,-1
+CR009131,Bengaluru Urban,Bengaluru PS 4,Theft,2023-08-01,12.909847,77.632805,18,61,Open,0,-1
+CR009151,Mangaluru,Mangaluru PS 3,Drug Offence,2024-05-10,12.980306,74.846579,19,60,Under Investigation,0,-1
+CR009213,Belagavi,Belagavi PS 5,Drug Offence,2024-08-02,15.918408,74.397423,20,60,Open,0,-1
+CR009255,Kalaburagi,Kalaburagi PS 4,Robbery,2023-02-19,17.32616,76.770056,18,64,Under Investigation,1,-1
+CR009329,Mysuru,Mysuru PS 3,Assault,2024-04-11,12.368402,76.640489,74,19,Charge Sheet Filed,0,-1
+CR009352,Mangaluru,Mangaluru PS 5,Fraud,2023-04-15,12.907483,74.811268,18,21,Closed,0,-1
+CR009373,Kalaburagi,Kalaburagi PS 5,Assault,2025-01-23,17.262697,76.772726,19,64,Closed,0,-1
+CR009377,Mangaluru,Mangaluru PS 1,Vehicle Theft,2024-08-25,12.980354,74.86513,21,64,Closed,1,-1
+CR009395,Kalaburagi,Kalaburagi PS 2,Fraud,2025-05-13,17.321285,76.753134,18,29,Charge Sheet Filed,0,-1
+CR009446,Mysuru,Mysuru PS 4,Burglary,2023-01-29,12.345874,76.635784,19,21,Open,0,-1
+CR009473,Bengaluru Urban,Bengaluru PS 5,Assault,2024-07-05,12.896863,77.527839,24,18,Open,0,-1
+CR009743,Belagavi,Belagavi PS 2,Cybercrime,2024-05-23,15.836659,74.446036,18,18,Closed,0,-1
+CR009754,Mangaluru,Mangaluru PS 2,Robbery,2024-08-27,12.921604,74.808314,18,30,Charge Sheet Filed,1,-1
+CR009757,Kalaburagi,Kalaburagi PS 1,Fraud,2023-05-12,17.294166,76.812491,21,19,Under Investigation,0,-1
+CR009763,Bengaluru Urban,Bengaluru PS 3,Cybercrime,2023-06-26,13.004311,77.621272,18,23,Under Investigation,0,-1
+CR009781,Bengaluru Urban,Bengaluru PS 2,Vehicle Theft,2023-02-27,12.929123,77.555905,21,20,Under Investigation,1,-1
+CR009783,Mangaluru,Mangaluru PS 4,Vehicle Theft,2024-03-25,12.937124,74.823295,67,18,Charge Sheet Filed,0,-1
+CR009801,Vijayapura,Vijayapura PS 2,Drug Offence,2023-06-03,16.795832,75.638181,20,64,Open,0,-1
+CR009821,Mangaluru,Mangaluru PS 5,Assault,2025-06-08,12.89743,74.798629,18,60,Open,0,-1
+CR009887,Dharwad,Dharwad PS 3,Theft,2024-07-22,15.472739,74.961793,74,18,Charge Sheet Filed,1,-1
+CR009898,Belagavi,Belagavi PS 1,Burglary,2023-04-27,15.891389,74.472155,18,23,Under Investigation,0,-1
+CR009940,Kalaburagi,Kalaburagi PS 1,Fraud,2023-07-26,17.29697,76.683544,19,62,Closed,0,-1
+CR009956,Vijayapura,Vijayapura PS 1,Burglary,2023-05-07,16.826908,75.727302,74,18,Closed,0,-1

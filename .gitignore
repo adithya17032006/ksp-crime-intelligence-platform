@@ -1,3 +1,75 @@
+<<<<<<< HEAD
 bhuvan/ 
 *.pkl 
 *.csv
+=======
+# Python
+
+**pycache**/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+
+.ipynb_checkpoints/
+.virtual_documents/
+
+# Virtual Environments
+
+venv/
+env/
+.venv/
+
+# IDEs
+
+.idea/
+.vscode/
+
+# Logs
+
+*.log
+
+# Operating System Files
+
+.DS_Store
+Thumbs.db
+
+# Models
+
+models/
+outputs/models/
+
+# Build / Distribution
+
+build/
+dist/
+*.egg-info/
+
+# Environment Variables
+
+.env
+
+# Temporary Files
+
+*.tmp
+*.bak
+
+# Notebook Export Files
+
+*.html
+
+# GIS Generated Outputs (Optional)
+
+# Uncomment if generated maps become too large
+
+# gis/outputs/maps/
+
+# Large Data Files (Optional)
+
+# Uncomment if datasets become very large
+
+# data/raw/
+
+# data/processed/
+>>>>>>> 1c736f9fefabea0e73be92a7d5565516bb85607d
