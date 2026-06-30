@@ -21,6 +21,7 @@ from backend.routes.assistant import router as assistant_router
 from backend.routes.cases import router as cases_router
 from backend.routes.auth import router as auth_router
 from backend.routes.incidents import router as incidents_router
+from backend.routes.network import router as network_router
 from api_routes import router as ml_router
 
 app = FastAPI(
@@ -49,6 +50,7 @@ app.include_router(assistant_router)
 app.include_router(cases_router)
 app.include_router(auth_router)
 app.include_router(incidents_router)
+app.include_router(network_router)
 app.include_router(ml_router)
 
 @app.get("/health")

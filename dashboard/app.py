@@ -956,6 +956,156 @@ elif page == "🧠 AI Assistant & FIR Processing":
                 st.warning("Upload a PDF first.")
 
 
+# ─── Criminal Network Mapping ──────────────────────────────
+elif page == "🕸️ Criminal Network Mapping":
+    render_header("Criminal Network Mapping")
+    st.markdown("### 🕸️ Entity Relationship & Co-Offending Network")
+    st.info("This interactive map demonstrates relationships and clusters linking Districts, Crime Categories, and Offender Status based on the incident records database.")
+
+    try:
+        r = requests.get(f"{API_BASE_URL}/api/network/graph", timeout=10)
+        if r.status_code == 200:
+            graph_data = r.json()
+            nodes = graph_data.get("nodes", [])
+            edges = graph_data.get("edges", [])
+
+            if not nodes:
+                st.warning("⚠️ No network node relationship data available in database.")
+            else:
+                import json
+                # Format Vis.js network config
+                # Color code node types
+                color_map = {
+                    "District": {"background": "#1e3a8a", "border": "#3b82f6", "highlight": {"background": "#3b82f6", "border": "#60a5fa"}},
+                    "Crime Category": {"background": "#991b1b", "border": "#ef4444", "highlight": {"background": "#ef4444", "border": "#f87171"}},
+                    "Offender Type": {"background": "#065f46", "border": "#10b981", "highlight": {"background": "#10b981", "border": "#34d399"}}
+                }
+
+                vis_nodes = []
+                for n in nodes:
+                    cat = n.get("category", "District")
+                    color = color_map.get(cat, {"background": "#334155", "border": "#64748b"})
+                    vis_nodes.append({
+                        "id": n["id"],
+                        "label": n["label"],
+                        "title": f"Category: {cat}\nName: {n['label']}",
+                        "value": n["value"],
+                        "color": color,
+                        "font": {"color": "#f8fafc"}
+                    })
+
+                vis_edges = []
+                for e in edges:
+                    vis_edges.append({
+                        "from": e["from"],
+                        "to": e["to"],
+                        "value": e["weight"],
+                        "title": e["label"],
+                        "label": str(e["weight"]),
+                        "color": {"color": "#334155", "highlight": "#60a5fa"}
+                    })
+
+                nodes_json = json.dumps(vis_nodes)
+                edges_json = json.dumps(vis_edges)
+
+                # Raw HTML template with vis.js library injected
+                html_code = f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+                  <style type="text/css">
+                    #mynetwork {{
+                      width: 100%;
+                      height: 600px;
+                      border: 1px solid #334155;
+                      background-color: #0f172a;
+                      border-radius: 8px;
+                    }}
+                  </style>
+                </head>
+                <body>
+                <div id="mynetwork"></div>
+                <script type="text/javascript">
+                  var nodes = new vis.DataSet({nodes_json});
+                  var edges = new vis.DataSet({edges_json});
+
+                  var container = document.getElementById('mynetwork');
+                  var data = {{
+                    nodes: nodes,
+                    edges: edges
+                  }};
+                  var options = {{
+                    nodes: {{
+                      shape: 'dot',
+                      scaling: {{
+                        min: 15,
+                        max: 40
+                      }},
+                      font: {{
+                        size: 14,
+                        face: 'system-ui, -apple-system, sans-serif'
+                      }},
+                      borderWidth: 2
+                    }},
+                    edges: {{
+                      width: 2,
+                      scaling: {{
+                        min: 1,
+                        max: 8
+                      }},
+                      smooth: {{
+                        type: 'continuous'
+                      }}
+                    }},
+                    physics: {{
+                      barnesHut: {{
+                        gravitationalConstant: -15000,
+                        centralGravity: 0.2,
+                        springLength: 120,
+                        springConstant: 0.05,
+                        damping: 0.09,
+                        avoidOverlap: 0.8
+                      }}
+                    }},
+                    interaction: {{
+                      hover: true,
+                      navigationButtons: true,
+                      keyboard: true
+                    }}
+                  }};
+                  var network = new vis.Network(container, data, options);
+                </script>
+                </body>
+                </html>
+                """
+                st.components.v1.html(html_code, height=620, scrolling=True)
+                
+                # Show tabular overview
+                st.markdown("### 📊 Network Relationship Summary")
+                col_d, col_o = st.columns(2)
+                
+                with col_d:
+                    st.write("**District Crime Proximity Counts**")
+                    dist_links = [{"Source": n["label"], "Target": e["to"].replace("crime_", ""), "Count": e["value"]} for e in edges for n in nodes if n["id"] == e["from"] and n["category"] == "District"]
+                    if dist_links:
+                        st.dataframe(pd.DataFrame(dist_links).sort_values("Count", ascending=False), use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No connections found.")
+                        
+                with col_o:
+                    st.write("**Offender Predilection to Crime Types**")
+                    off_links = [{"Source": "Repeat Offenders" if "yes" in e["from"].lower() else "First-time Offenders", "Target": e["to"].replace("crime_", ""), "Count": e["value"]} for e in edges for n in nodes if n["id"] == e["from"] and n["category"] == "Offender Type"]
+                    if off_links:
+                        st.dataframe(pd.DataFrame(off_links).sort_values("Count", ascending=False), use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No offender correlations found.")
+        else:
+            st.error(f"❌ Failed to reach network api. Response: {r.text}")
+    except Exception as e:
+        st.error(f"❌ Cannot connect to backend API: {e}")
+
+
 # ─── Admin Panel (SP only) ─────────────────────────────────
 elif page == "⚙️ Admin Panel":
     render_header("Admin Panel — SP Access Only")
