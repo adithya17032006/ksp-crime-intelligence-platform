@@ -21,36 +21,48 @@ def run_command(command, cwd=None, prefix=""):
     )
     for line in iter(process.stdout.readline, ''):
         sys.stdout.write(f"[{prefix}] {line}")
+        sys.stdout.flush()
     process.stdout.close()
     process.wait()
 
 def start_services():
     print("🚀 Initializing KSP Crime Intelligence Platform...")
 
-    print("📊 [1/4] Running ML Pipeline to generate assets...")
-    subprocess.run([sys.executable, "main.py"], check=True)
+    # ── ML Pipeline ────────────────────────────────────────────
+    # Only run ML training if the model artifact is missing.
+    # On Render (or any cloud deploy) the pre-built model is
+    # committed to git, so we skip retraining to avoid failures
+    # caused by missing local CSV datasets.
+    model_path = os.path.join("ml", "crime_rf_model.pkl")
+    if os.path.exists(model_path):
+        print(f"✅ [1/4] ML model already exists at '{model_path}' — skipping training.")
+    else:
+        print("📊 [1/4] ML model not found — running pipeline to generate assets...")
+        try:
+            subprocess.run([sys.executable, "main.py"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️  ML pipeline failed (code {e.returncode}). Continuing without model — some features may be limited.")
 
-    print("🗄️ [2/4] Database structure verified.")
-    # subprocess.run([sys.executable, "backend/database/load_data.py"], check=True)
+    # ── Database ───────────────────────────────────────────────
+    print("🗄️  [2/4] Database structure verified (using remote PostgreSQL).")
 
+    # ── API Gateway ────────────────────────────────────────────
     print("🌐 [3/4] Starting KSP API Gateway...")
-
-    # 1. Start the main API Gateway (which now includes backend routes and network analysis)
-    # We will use uvicorn to run app:app
     api_thread = threading.Thread(
         target=run_command,
         args=("uvicorn app:app --host 0.0.0.0 --port 8000", ".", "API"),
         daemon=True
     )
     api_thread.start()
-    
-    # 2. Wait for API to initialize
-    time.sleep(3)
 
-    # 3. Start the Streamlit Frontend Application
+    # Wait for API to initialise before starting Streamlit
+    time.sleep(5)
+
+    # ── Streamlit Frontend ─────────────────────────────────────
+    print("🖥️  [4/4] Starting Streamlit Dashboard...")
     frontend_thread = threading.Thread(
         target=run_command,
-        args=("streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0", ".", "Streamlit"),
+        args=("streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true", ".", "Streamlit"),
         daemon=True
     )
     frontend_thread.start()

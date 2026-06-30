@@ -1,75 +1,45 @@
-<<<<<<< HEAD
-bhuvan/ 
-*.pkl 
-*.csv
-=======
 # Python
-
-**pycache**/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 
 # Jupyter
-
 .ipynb_checkpoints/
 .virtual_documents/
 
 # Virtual Environments
-
 venv/
 env/
 .venv/
 
 # IDEs
-
 .idea/
 .vscode/
 
 # Logs
-
 *.log
 
 # Operating System Files
-
 .DS_Store
 Thumbs.db
 
-# Models
-
-models/
-outputs/models/
-
 # Build / Distribution
-
 build/
 dist/
 *.egg-info/
 
 # Environment Variables
-
 .env
 
 # Temporary Files
-
 *.tmp
 *.bak
 
-# Notebook Export Files
+# Large Data Files — exclude raw CSVs but keep ML output CSVs
+crime_dataset_india.csv
+data/raw/
+data/processed/
 
-*.html
-
-# GIS Generated Outputs (Optional)
-
-# Uncomment if generated maps become too large
-
+# GIS HTML outputs are large but needed — keep them
 # gis/outputs/maps/
-
-# Large Data Files (Optional)
-
-# Uncomment if datasets become very large
-
-# data/raw/
-
-# data/processed/
->>>>>>> 1c736f9fefabea0e73be92a7d5565516bb85607d

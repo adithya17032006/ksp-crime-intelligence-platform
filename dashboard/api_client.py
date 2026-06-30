@@ -247,4 +247,18 @@ class KSPAPIClient:
         """
         Fetches static HTML map layers if online or falls back to local disk HTML files.
         """
+        map_files = {
+            "crime_map": "gis/outputs/maps/crime_map.html",
+            "crime_heatmap": "gis/outputs/maps/crime_heatmap.html",
+            "crime_hotspots": "gis/outputs/maps/crime_hotspots.html",
+            "crime_anomalies": "gis/outputs/maps/crime_anomalies.html"
+        }
+        
+        file_path = map_files.get(layer_name, "gis/outputs/maps/crime_map.html")
+        if os.path.exists(file_path):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            except Exception:
+                pass
         return "<div style='color:#ef4444; padding:20px;'>Map layer not found in database or API is unreachable.</div>"

@@ -525,7 +525,27 @@ if page == "📊 Executive Dashboard":
     df_risk, err_rk = api_client.fetch_district_risk()
     handle_api_error(err_an or err_ce or err_rk)
     if filtered_df.empty:
-        st.warning("No incident data available.")
+        st.warning("⚠️ **The Incidents Database is currently empty or no data matches the filters.**")
+        st.info("To proceed, please upload your Crime Incidents CSV file to populate the database.")
+        
+        csv_file = st.file_uploader("Upload Crime Incidents (CSV)", type=["csv"], key="csv_upload_main")
+        if csv_file:
+            if st.button("🚀 Load Data to Database", type="primary", use_container_width=True):
+                with st.spinner("Uploading and processing CSV..."):
+                    try:
+                        r = requests.post(
+                            f"{API_BASE_URL}/api/incidents/upload",
+                            files={"file": (csv_file.name, csv_file.getvalue(), "text/csv")},
+                            timeout=60
+                        )
+                        if r.status_code == 201:
+                            st.success(f"✅ Data loaded successfully! {r.json().get('message')}")
+                            st.cache_data.clear()
+                            st.rerun()
+                        else:
+                            st.error(f"❌ Upload failed: {r.text}")
+                    except Exception as e:
+                        st.error(f"❌ Error: {e}")
     else:
         total = len(filtered_df)
         hotspots = len(df_centroids) if not df_centroids.empty else 0

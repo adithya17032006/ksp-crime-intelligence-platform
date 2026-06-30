@@ -7,5 +7,13 @@ python-dotenv
 google-generativeai
 sqlalchemy
 PyPDF2
+pypdf
 python-multipart
 supabase
+fastapi
+uvicorn
+scikit-learn
+numpy
+matplotlib
+seaborn
+pydantic

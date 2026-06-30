@@ -1,0 +1,9 @@
+feature,importance_weight
+Crime_Type_Encoded,0.564668
+Hour,0.100363
+Latitude,0.084507
+Longitude,0.082909
+Victim_Age,0.072112
+Month,0.051259
+Day_of_Week,0.026429
+District_Encoded,0.017752
