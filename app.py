@@ -55,6 +55,13 @@ app.include_router(ml_router)
 def health():
     return {"status": "healthy"}
 
+@app.get("/")
+def root():
+    """Redirect root requests to the Streamlit dashboard."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="http://localhost:8501", status_code=302)
+
+
 model = None
 
 @app.on_event("startup")
