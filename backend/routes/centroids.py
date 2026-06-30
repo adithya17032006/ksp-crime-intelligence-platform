@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.centroid_service import get_hotspot_centroids
+from backend.services.centroid_service import get_hotspot_centroids
 
 router = APIRouter()
 

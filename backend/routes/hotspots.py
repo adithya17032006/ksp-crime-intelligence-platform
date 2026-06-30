@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.hotspot_service import get_hotspot_data
+from backend.services.hotspot_service import get_hotspot_data
 
 router = APIRouter()
 

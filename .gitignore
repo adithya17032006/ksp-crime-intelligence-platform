@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+bhuvan/ 
+*.pkl 
+*.csv
+=======
 # Python
 
 **pycache**/
@@ -67,3 +72,4 @@ dist/
 # data/raw/
 
 # data/processed/
+>>>>>>> 1c736f9fefabea0e73be92a7d5565516bb85607d

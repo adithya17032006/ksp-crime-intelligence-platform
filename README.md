@@ -1,14 +1,3 @@
----
-title: KSP Crime Intelligence Platform
-emoji: 🚨
-colorFrom: blue
-colorTo: yellow
-sdk: streamlit
-sdk_version: 1.35.0
-app_file: dashboard/app.py
-pinned: false
----
-
 # KSP Crime Intelligence Platform
 
 AI-Driven Crime Analytics, Intelligence, and Visualization Platform for Karnataka State Police.

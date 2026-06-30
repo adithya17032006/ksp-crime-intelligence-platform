@@ -2,3 +2,10 @@ streamlit
 pandas
 plotly
 requests
+psycopg2-binary
+python-dotenv
+google-generativeai
+sqlalchemy
+PyPDF2
+python-multipart
+supabase

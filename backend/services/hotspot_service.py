@@ -1,5 +1,5 @@
 import pandas as pd
-from database.connection import engine
+from backend.database.connection import engine
 
 def get_hotspot_data():
 

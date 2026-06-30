@@ -1,16 +1,16 @@
-from sqlalchemy import create_engine
 import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+from dotenv import load_dotenv
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv()
 
-DB_PATH = os.path.join(
-    BASE_DIR,
-    "crime_intelligence.db"
-)
-
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/ksp_db")
 
 engine = create_engine(
     DATABASE_URL,
     echo=False
 )
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()

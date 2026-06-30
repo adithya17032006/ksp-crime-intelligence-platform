@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.trend_service import get_monthly_trends
+from backend.services.trend_service import get_monthly_trends
 
 router = APIRouter()
 

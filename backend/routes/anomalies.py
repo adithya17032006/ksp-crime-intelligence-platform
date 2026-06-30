@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.anomaly_service import get_anomaly_data
+from backend.services.anomaly_service import get_anomaly_data
 
 router = APIRouter()
 

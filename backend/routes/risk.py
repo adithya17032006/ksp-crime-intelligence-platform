@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.risk_service import get_risk_data
+from backend.services.risk_service import get_risk_data
 
 router = APIRouter()
 

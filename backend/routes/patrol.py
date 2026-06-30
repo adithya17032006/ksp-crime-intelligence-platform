@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from services.patrol_service import get_patrol_data
+from backend.services.patrol_service import get_patrol_data
 
 router = APIRouter()
 
