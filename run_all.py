@@ -29,10 +29,6 @@ def start_services():
     print("🚀 Initializing KSP Crime Intelligence Platform...")
 
     # ── ML Pipeline ────────────────────────────────────────────
-    # Only run ML training if the model artifact is missing.
-    # On Render (or any cloud deploy) the pre-built model is
-    # committed to git, so we skip retraining to avoid failures
-    # caused by missing local CSV datasets.
     model_path = os.path.join("ml", "crime_rf_model.pkl")
     if os.path.exists(model_path):
         print(f"✅ [1/4] ML model already exists at '{model_path}' — skipping training.")
@@ -46,11 +42,22 @@ def start_services():
     # ── Database ───────────────────────────────────────────────
     print("🗄️  [2/4] Database structure verified (using remote PostgreSQL).")
 
+    # ── Port Configuration ─────────────────────────────────────
+    # Render routes public HTTP traffic to the port in the PORT env var.
+    # Therefore, Streamlit (the user interface) must bind to this PORT.
+    streamlit_port = int(os.getenv("PORT", "8501"))
+    
+    # Run FastAPI internally. If Streamlit is on 8000, move FastAPI to 8080 to prevent conflict.
+    api_port = 8000 if streamlit_port != 8000 else 8080
+    
+    # Inject correct backend API URL so Streamlit knows where to send requests
+    os.environ["KSP_API_BASE_URL"] = f"http://127.0.0.1:{api_port}"
+
     # ── API Gateway ────────────────────────────────────────────
-    print("🌐 [3/4] Starting KSP API Gateway...")
+    print(f"🌐 [3/4] Starting KSP API Gateway on port {api_port}...")
     api_thread = threading.Thread(
         target=run_command,
-        args=("uvicorn app:app --host 0.0.0.0 --port 8000", ".", "API"),
+        args=(f"uvicorn app:app --host 0.0.0.0 --port {api_port}", ".", "API"),
         daemon=True
     )
     api_thread.start()
@@ -59,19 +66,18 @@ def start_services():
     time.sleep(5)
 
     # ── Streamlit Frontend ─────────────────────────────────────
-    print("🖥️  [4/4] Starting Streamlit Dashboard...")
+    print(f"🖥️  [4/4] Starting Streamlit Dashboard on port {streamlit_port}...")
     frontend_thread = threading.Thread(
         target=run_command,
-        args=("streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true", ".", "Streamlit"),
+        args=(f"streamlit run dashboard/app.py --server.port {streamlit_port} --server.address 0.0.0.0 --server.headless true", ".", "Streamlit"),
         daemon=True
     )
     frontend_thread.start()
 
     print("\n" + "="*50)
     print("✅ All services started!")
-    print("📍 API Gateway: http://localhost:8000")
-    print("📍 API Docs:    http://localhost:8000/docs")
-    print("📍 Web Client:  http://localhost:8501")
+    print(f"📍 API Gateway (Internal): http://localhost:{api_port}")
+    print(f"📍 Web Client (Public):    http://localhost:{streamlit_port}")
     print("="*50 + "\n")
 
     try:
