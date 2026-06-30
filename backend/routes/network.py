@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException
 from backend.database.connection import SessionLocal
 from backend.database.models import CrimeIncident
 from sqlalchemy import func
-import collections
 
 router = APIRouter(prefix="/api/network", tags=["Network Analysis"])
 
@@ -10,8 +9,8 @@ router = APIRouter(prefix="/api/network", tags=["Network Analysis"])
 def get_network_graph():
     db = SessionLocal()
     try:
-        # Fetch relationship between District and Crime Category
-        district_crime_relations = db.query(
+        # District ↔ Crime Type relationships
+        district_crime = db.query(
             CrimeIncident.district,
             CrimeIncident.crime_type,
             func.count(CrimeIncident.id).label("count")
@@ -21,71 +20,91 @@ def get_network_graph():
         ).group_by(
             CrimeIncident.district,
             CrimeIncident.crime_type
-        ).all()
+        ).order_by(func.count(CrimeIncident.id).desc()).all()
 
-        # Fetch relationship between Repeat Offenders and Crime Category
-        offender_crime_relations = db.query(
+        # District ↔ Offender Type relationships
+        district_offender = db.query(
+            CrimeIncident.district,
             CrimeIncident.repeat_offender,
-            CrimeIncident.crime_type,
             func.count(CrimeIncident.id).label("count")
         ).filter(
-            CrimeIncident.repeat_offender != None,
-            CrimeIncident.crime_type != None
+            CrimeIncident.district != None,
+            CrimeIncident.repeat_offender != None
         ).group_by(
-            CrimeIncident.repeat_offender,
-            CrimeIncident.crime_type
+            CrimeIncident.district,
+            CrimeIncident.repeat_offender
         ).all()
 
-        nodes = []
-        edges = []
-        node_ids = set()
+        # Crime Type ↔ Status relationships
+        crime_status = db.query(
+            CrimeIncident.crime_type,
+            CrimeIncident.status,
+            func.count(CrimeIncident.id).label("count")
+        ).filter(
+            CrimeIncident.crime_type != None,
+            CrimeIncident.status != None
+        ).group_by(
+            CrimeIncident.crime_type,
+            CrimeIncident.status
+        ).all()
 
-        # Helper to add node safely
-        def add_node(node_id, label, category, val=10):
-            if node_id not in node_ids:
-                nodes.append({
-                    "id": node_id,
-                    "label": label,
-                    "category": category,
-                    "value": val
+        # Build sankey source/target/value lists
+        sankey_links = []
+        label_set = []
+        label_index = {}
+
+        def get_label_idx(name):
+            if name not in label_index:
+                label_index[name] = len(label_set)
+                label_set.append(name)
+            return label_index[name]
+
+        # District → Crime Type
+        for dist, crime, count in district_crime[:80]:  # limit to top 80
+            if dist and crime:
+                sankey_links.append({
+                    "source": get_label_idx(f"[District] {dist}"),
+                    "target": get_label_idx(f"[Crime] {crime}"),
+                    "value": int(count),
+                    "layer": "district_crime"
                 })
-                node_ids.add(node_id)
 
-        # Build connections from District to Crime Category
-        for dist, crime, count in district_crime_relations:
-            dist_id = f"district_{dist}"
-            crime_id = f"crime_{crime}"
-            
-            # Base node sizing on count representation
-            add_node(dist_id, dist, "District", val=20)
-            add_node(crime_id, crime, "Crime Category", val=15)
-            
-            edges.append({
-                "from": dist_id,
-                "to": crime_id,
-                "weight": count,
-                "label": f"{count} cases"
-            })
+        # Crime Type → Status
+        for crime, status, count in crime_status[:60]:
+            if crime and status:
+                sankey_links.append({
+                    "source": get_label_idx(f"[Crime] {crime}"),
+                    "target": get_label_idx(f"[Status] {status}"),
+                    "value": int(count),
+                    "layer": "crime_status"
+                })
 
-        # Build connections from Repeat Offender status to Crime Category
-        for offender, crime, count in offender_crime_relations:
-            if not offender:
-                continue
-            off_label = "Repeat Offenders" if offender.lower() in ["yes", "y", "true"] else "First-time Offenders"
-            off_id = f"offender_{offender.lower()}"
-            crime_id = f"crime_{crime}"
-            
-            add_node(off_id, off_label, "Offender Type", val=18)
-            add_node(crime_id, crime, "Crime Category", val=15)
-            
-            edges.append({
-                "from": off_id,
-                "to": crime_id,
-                "weight": count,
-                "label": f"{count} cases"
-            })
+        # Crime Type heatmap data
+        heatmap_data = {}
+        for dist, crime, count in district_crime:
+            if dist not in heatmap_data:
+                heatmap_data[dist] = {}
+            heatmap_data[dist][crime] = int(count)
 
-        return {"nodes": nodes, "edges": edges}
+        # Offender summary
+        offender_summary = []
+        for dist, offender, count in district_offender:
+            if dist and offender:
+                offender_summary.append({
+                    "district": dist,
+                    "offender_type": "Repeat" if str(offender).lower() in ["yes", "y", "true", "1"] else "First-time",
+                    "count": int(count)
+                })
+
+        return {
+            "sankey": {
+                "labels": label_set,
+                "links": sankey_links
+            },
+            "heatmap": heatmap_data,
+            "offender_summary": offender_summary
+        }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:

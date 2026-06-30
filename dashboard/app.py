@@ -960,150 +960,104 @@ elif page == "🧠 AI Assistant & FIR Processing":
 elif page == "🕸️ Criminal Network Mapping":
     render_header("Criminal Network Mapping")
     st.markdown("### 🕸️ Entity Relationship & Co-Offending Network")
-    st.info("This interactive map demonstrates relationships and clusters linking Districts, Crime Categories, and Offender Status based on the incident records database.")
+    st.info("This module maps complex relationships between Districts, Crime Categories, and Case Status to identify systemic patterns.")
 
     try:
         r = requests.get(f"{API_BASE_URL}/api/network/graph", timeout=10)
         if r.status_code == 200:
-            graph_data = r.json()
-            nodes = graph_data.get("nodes", [])
-            edges = graph_data.get("edges", [])
-
-            if not nodes:
-                st.warning("⚠️ No network node relationship data available in database.")
+            data = r.json()
+            sankey = data.get("sankey", {})
+            heatmap_data = data.get("heatmap", {})
+            offender_summary = data.get("offender_summary", [])
+            
+            labels = sankey.get("labels", [])
+            links = sankey.get("links", [])
+            
+            if not labels or not links:
+                st.warning("⚠️ No network relationship data available.")
             else:
-                import json
-                # Format Vis.js network config
-                # Color code node types
-                color_map = {
-                    "District": {"background": "#1e3a8a", "border": "#3b82f6", "highlight": {"background": "#3b82f6", "border": "#60a5fa"}},
-                    "Crime Category": {"background": "#991b1b", "border": "#ef4444", "highlight": {"background": "#ef4444", "border": "#f87171"}},
-                    "Offender Type": {"background": "#065f46", "border": "#10b981", "highlight": {"background": "#10b981", "border": "#34d399"}}
-                }
-
-                vis_nodes = []
-                for n in nodes:
-                    cat = n.get("category", "District")
-                    color = color_map.get(cat, {"background": "#334155", "border": "#64748b"})
-                    vis_nodes.append({
-                        "id": n["id"],
-                        "label": n["label"],
-                        "title": f"Category: {cat}\nName: {n['label']}",
-                        "value": n["value"],
-                        "color": color,
-                        "font": {"color": "#f8fafc"}
-                    })
-
-                vis_edges = []
-                for e in edges:
-                    vis_edges.append({
-                        "from": e["from"],
-                        "to": e["to"],
-                        "value": e["weight"],
-                        "title": e["label"],
-                        "label": str(e["weight"]),
-                        "color": {"color": "#334155", "highlight": "#60a5fa"}
-                    })
-
-                nodes_json = json.dumps(vis_nodes)
-                edges_json = json.dumps(vis_edges)
-
-                # Raw HTML template with vis.js library injected
-                html_code = f"""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-                  <style type="text/css">
-                    #mynetwork {{
-                      width: 100%;
-                      height: 600px;
-                      border: 1px solid #334155;
-                      background-color: #0f172a;
-                      border-radius: 8px;
-                    }}
-                  </style>
-                </head>
-                <body>
-                <div id="mynetwork"></div>
-                <script type="text/javascript">
-                  var nodes = new vis.DataSet({nodes_json});
-                  var edges = new vis.DataSet({edges_json});
-
-                  var container = document.getElementById('mynetwork');
-                  var data = {{
-                    nodes: nodes,
-                    edges: edges
-                  }};
-                  var options = {{
-                    nodes: {{
-                      shape: 'dot',
-                      scaling: {{
-                        min: 15,
-                        max: 40
-                      }},
-                      font: {{
-                        size: 14,
-                        face: 'system-ui, -apple-system, sans-serif'
-                      }},
-                      borderWidth: 2
-                    }},
-                    edges: {{
-                      width: 2,
-                      scaling: {{
-                        min: 1,
-                        max: 8
-                      }},
-                      smooth: {{
-                        type: 'continuous'
-                      }}
-                    }},
-                    physics: {{
-                      barnesHut: {{
-                        gravitationalConstant: -15000,
-                        centralGravity: 0.2,
-                        springLength: 120,
-                        springConstant: 0.05,
-                        damping: 0.09,
-                        avoidOverlap: 0.8
-                      }}
-                    }},
-                    interaction: {{
-                      hover: true,
-                      navigationButtons: true,
-                      keyboard: true
-                    }}
-                  }};
-                  var network = new vis.Network(container, data, options);
-                </script>
-                </body>
-                </html>
-                """
-                st.components.v1.html(html_code, height=620, scrolling=True)
+                tabs = st.tabs(["🔀 Flow Network (Sankey)", "🔥 Distribution Heatmap", "👥 Offender Profiles"])
                 
-                # Show tabular overview
-                st.markdown("### 📊 Network Relationship Summary")
-                col_d, col_o = st.columns(2)
+                with tabs[0]:
+                    st.markdown("#### District → Crime Type → Status Flow")
+                    st.caption("Visualizes the volume flow of cases across jurisdictions and their current resolution status.")
+                    
+                    source = [link["source"] for link in links]
+                    target = [link["target"] for link in links]
+                    value = [link["value"] for link in links]
+                    
+                    fig_sankey = go.Figure(data=[go.Sankey(
+                        node=dict(
+                            pad=15,
+                            thickness=20,
+                            line=dict(color="black", width=0.5),
+                            label=labels,
+                            color="#3b82f6"
+                        ),
+                        link=dict(
+                            source=source,
+                            target=target,
+                            value=value,
+                            color="rgba(59, 130, 246, 0.4)"
+                        )
+                    )])
+                    fig_sankey.update_layout(height=600, margin=dict(l=0, r=0, t=30, b=0), paper_bgcolor='rgba(0,0,0,0)', font=dict(color="#f8fafc", size=12))
+                    st.plotly_chart(fig_sankey, use_container_width=True)
                 
-                with col_d:
-                    st.write("**District Crime Proximity Counts**")
-                    dist_links = [{"Source": n["label"], "Target": e["to"].replace("crime_", ""), "Count": e["value"]} for e in edges for n in nodes if n["id"] == e["from"] and n["category"] == "District"]
-                    if dist_links:
-                        st.dataframe(pd.DataFrame(dist_links).sort_values("Count", ascending=False), use_container_width=True, hide_index=True)
-                    else:
-                        st.info("No connections found.")
+                with tabs[1]:
+                    st.markdown("#### District vs Crime Category Heatmap")
+                    if heatmap_data:
+                        districts = list(heatmap_data.keys())
+                        crime_types = set()
+                        for d in districts:
+                            crime_types.update(heatmap_data[d].keys())
+                        crime_types = list(crime_types)
                         
-                with col_o:
-                    st.write("**Offender Predilection to Crime Types**")
-                    off_links = [{"Source": "Repeat Offenders" if "yes" in e["from"].lower() else "First-time Offenders", "Target": e["to"].replace("crime_", ""), "Count": e["value"]} for e in edges for n in nodes if n["id"] == e["from"] and n["category"] == "Offender Type"]
-                    if off_links:
-                        st.dataframe(pd.DataFrame(off_links).sort_values("Count", ascending=False), use_container_width=True, hide_index=True)
+                        z_data = []
+                        for d in districts:
+                            row = [heatmap_data[d].get(c, 0) for c in crime_types]
+                            z_data.append(row)
+                            
+                        fig_heat = go.Figure(data=go.Heatmap(
+                            z=z_data,
+                            x=crime_types,
+                            y=districts,
+                            colorscale="Blues"
+                        ))
+                        fig_heat.update_layout(height=500, margin=dict(l=0, r=0, t=30, b=0), paper_bgcolor='rgba(0,0,0,0)', font=dict(color="#f8fafc"))
+                        st.plotly_chart(fig_heat, use_container_width=True)
                     else:
-                        st.info("No offender correlations found.")
+                        st.info("No heatmap data available.")
+                        
+                with tabs[2]:
+                    st.markdown("#### Repeat vs First-Time Offender Distribution")
+                    if offender_summary:
+                        df_off = pd.DataFrame(offender_summary)
+                        df_pivot = df_off.pivot(index="district", columns="offender_type", values="count").fillna(0)
+                        
+                        fig_bar = go.Figure()
+                        for col in df_pivot.columns:
+                            fig_bar.add_trace(go.Bar(
+                                x=df_pivot.index,
+                                y=df_pivot[col],
+                                name=f"{col} Offenders"
+                            ))
+                            
+                        fig_bar.update_layout(
+                            barmode='stack',
+                            height=500,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color="#f8fafc"),
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                        )
+                        st.plotly_chart(fig_bar, use_container_width=True)
+                    else:
+                        st.info("No offender summary data available.")
         else:
-            st.error(f"❌ Failed to reach network api. Response: {r.text}")
+            st.error(f"❌ Failed to load network data. Status: {r.status_code}")
     except Exception as e:
-        st.error(f"❌ Cannot connect to backend API: {e}")
+        st.error(f"❌ Error connecting to API: {e}")
 
 
 # ─── Admin Panel (SP only) ─────────────────────────────────
